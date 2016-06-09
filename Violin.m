@@ -1,25 +1,100 @@
 classdef Violin < handle
+    % Violin creates violin plots for some data
+    %   A violin plot is an easy to read substitute for a box plot
+    %   that replaces the box shape with a kernel density estimate of
+    %   the data, and optionally overlays the data points itself.
+    %
+    %   Additional constructor parameters include the width of the
+    %   plot, the bandwidth of the kernel density estimation, and the
+    %   X-axis position of the violin plot.
+    %
+    %   Use <a href="matlab:help('violinplot')">violinplot</a> for a
+    %   <a href="matlab:help('boxplot')">boxplot</a>-like wrapper for
+    %   interactive plotting.
+    %
+    %   See for more information on Violin Plots:
+    %   J. L. Hintze and R. D. Nelson, "Violin plots: a box
+    %   plot-density trace synergism," The American Statistician, vol.
+    %   52, no. 2, pp. 181-184, 1998.
+    %
+    % Violin Properties:
+    %    ViolinColor - Fill color of the violin area and data points.
+    %                  Defaults to the next default color cycle.
+    %    ViolinAlpha - Transparency of the ciolin area and data points.
+    %                  Defaults to 0.3.
+    %    EdgeColor   - Color of the violin area outline.
+    %                  Defaults to [0.5 0.5 0.5]
+    %    BoxColor    - Color of the box, whiskers, and the outlines of
+    %                  the median point and the notch indicators.
+    %                  Defaults to [0.5 0.5 0.5]
+    %    MedianColor - Fill color of the median and notch indicators.
+    %                  Defaults to [1 1 1]
+    %    ShowData    - Whether to show data points.
+    %                  Defaults to true
+    %    ShowNotches - Whether to show notch indicators.
+    %                  Defaults to false
+    %
+    % Violin Children:
+    %    ScatterPlot - <a href="matlab:help('fill')">fill</a> plot of the data points
+    %    ViolinPlot  - <a href="matlab:help('fill')">fill</a> plot of the kernel density estimate
+    %    BoxPlot     - <a href="matlab:help('fill')">fill</a> plot of the box between the quartiles
+    %    WhiskerPlot - line <a href="matlab:help('plot')">plot</a> between the whisker ends
+    %    MedianPlot  - <a href="matlab:help('scatter')">scatter</a> plot of the median (one point)
+    %    NotchPlots  - <a href="matlab:help('scatter')">scatter</a> plots for the notch indicators
+
+    % Copyright (c) 2016, Bastian Bechtold
+    % This code is released under the terms of the BSD 3-clause license
+
     properties
-        ScatterPlot
-        ViolinPlot
-        BoxPlot
-        WhiskerPlot
-        MedianPlot
-        NotchPlots
+        ScatterPlot % scatter plot of the data points
+        ViolinPlot  % fill plot of the kernel density estimate
+        BoxPlot     % fill plot of the box between the quartiles
+        WhiskerPlot % line plot between the whisker ends
+        MedianPlot  % scatter plot of the median (one point)
+        NotchPlots  % scatter plots for the notch indicators
     end
 
     properties (Dependent=true)
-        ViolinColor
-        ViolinAlpha
-        EdgeColor
-        BoxColor
-        MedianColor
-        ShowData
-        ShowNotches
+        ViolinColor % fill color of the violin area and data points
+        ViolinAlpha % transparency of the violin area and data points
+        EdgeColor   % color of the violin area outline
+        BoxColor    % color of box, whiskers, and median/notch edges
+        MedianColor % fill color of median and notches
+        ShowData    % whether to show data points
+        ShowNotches % whether to show notch indicators
     end
 
     methods
         function obj = Violin(data, pos, varargin)
+            %Violin plots a violin plot of some data at pos
+            %   VIOLIN(DATA, POS) plots a violin at x-position POS for
+            %   a vector of DATA points.
+            %
+            %   VIOLIN(..., 'PARAM1', val1, 'PARAM2', val2, ...)
+            %   specifies optional name/value pairs:
+            %     'Width'        Width of the violin in axis space.
+            %                    Defaults to 0.3
+            %     'Bandwidth'    Bandwidth of the kernel density
+            %                    estimate. Should be between 10% and
+            %                    40% of the data range.
+            %     'ViolinColor'  Fill color of the violin area and
+            %                    data points. Defaults to the next
+            %                    default color cycle.
+            %     'ViolinAlpha'  Transparency of the violin area and
+            %                    data points. Defaults to 0.3.
+            %     'EdgeColor'    Color of the violin area outline.
+            %                    Defaults to [0.5 0.5 0.5]
+            %     'BoxColor'     Color of the box, whiskers, and the
+            %                    outlines of the median point and the
+            %                    notch indicators. Defaults to
+            %                    [0.5 0.5 0.5]
+            %     'MedianColor'  Fill color of the median and notch
+            %                    indicators. Defaults to [1 1 1]
+            %     'ShowData'     Whether to show data points.
+            %                    Defaults to true
+            %     'ShowNotches'  Whether to show notch indicators.
+            %                    Defaults to false
+
             args = obj.checkInputs(data, pos, varargin{:});
             data = data(not(isnan(data)));
             if numel(data) == 1
@@ -41,7 +116,7 @@ classdef Violin < handle
             if isempty(args.Width)
                 width = 0.3/max(density);
             else
-                width = args.Width;
+                width = args.Width/max(density);
             end
 
             % plot the data points within the violin area
