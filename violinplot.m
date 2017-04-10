@@ -70,12 +70,23 @@ function violins = violinplot(data, cats, varargin)
         set(gca, 'xtick', 1:length(catnames), 'xticklabels', catnames);
 
     % 1D data, one category for each data point
-    elseif hascategories && length(data) == length(cats)
+    elseif hascategories && numel(data) == numel(cats)
         cats = categorical(cats);
         catnames = categories(cats);
         for n=1:length(catnames)
             thisCat = catnames{n};
             thisData = data(cats == thisCat);
+            violins(n) = Violin(thisData, n, varargin{:});
+        end
+        set(gca, 'xtick', 1:length(catnames), 'xticklabels', catnames);
+
+    % 2D data, one category for each data row
+    elseif hascategories && length(data) == length(cats)
+        cats = categorical(cats);
+        catnames = categories(cats);
+        for n=1:length(catnames)
+            thisCat = catnames{n};
+            thisData = data(n,:);
             violins(n) = Violin(thisData, n, varargin{:});
         end
         set(gca, 'xtick', 1:length(catnames), 'xticklabels', catnames);
