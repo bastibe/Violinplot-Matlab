@@ -79,17 +79,6 @@ function violins = violinplot(data, cats, varargin)
         end
         set(gca, 'xtick', 1:length(catnames), 'xticklabels', catnames);
 
-    % 2D data, one category for each data row
-    elseif hascategories && size(data,2) == numel(cats)
-        cats = categorical(cats);
-        catnames = categories(cats);
-        for n=1:length(catnames)
-            thisCat = catnames{n};
-            thisData = data(:,n);
-            violins(n) = Violin(thisData, n, varargin{:});
-        end
-        set(gca, 'xtick', 1:length(catnames), 'xticklabels', catnames);
-
     % 1D data, no categories
     elseif not(hascategories) && isvector(data)
         violins = Violin(data, 1);
