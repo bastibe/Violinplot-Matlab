@@ -35,7 +35,7 @@ classdef Violin < handle
     %                  Defaults to false
     %
     % Violin Children:
-    %    ScatterPlot - <a href="matlab:help('fill')">fill</a> plot of the data points
+    %    ScatterPlot - <a href="matlab:help('scatter')">scatter</a> plot of the data points
     %    ViolinPlot  - <a href="matlab:help('fill')">fill</a> plot of the kernel density estimate
     %    BoxPlot     - <a href="matlab:help('fill')">fill</a> plot of the box between the quartiles
     %    WhiskerPlot - line <a href="matlab:help('plot')">plot</a> between the whisker ends
