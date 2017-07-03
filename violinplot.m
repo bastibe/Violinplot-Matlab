@@ -6,7 +6,7 @@ function violins = violinplot(data, cats, varargin)
 %   DATAMATRIX.
 %
 %   VIOLINPLOT(TABLE), VIOLINPLOT(STRUCT), VIOLINPLOT(DATASET)
-%   plots violins for each row in TABLE, each field in STRUCT, and
+%   plots violins for each column in TABLE, each field in STRUCT, and
 %   each variable in DATASET. The violins are labeled according to
 %   the table/dataset variable name or the struct field name.
 %
