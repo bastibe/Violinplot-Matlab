@@ -42,6 +42,8 @@ function violins = violinplot(data, cats, varargin)
 %                    Defaults to true
 %     'ShowNotches'  Whether to show notch indicators.
 %                    Defaults to false
+%     'ShowMean'     Whether to show mean indicator
+%                    Defaults to false
 
 % Copyright (c) 2016, Bastian Bechtold
 % This code is released under the terms of the BSD 3-clause license

@@ -33,6 +33,8 @@ classdef Violin < handle
     %                  Defaults to true
     %    ShowNotches - Whether to show notch indicators.
     %                  Defaults to false
+    %    ShowMean    - Whether to show mean indicator.
+    %                  Defaults to false
     %
     % Violin Children:
     %    ScatterPlot - <a href="matlab:help('scatter')">scatter</a> plot of the data points
@@ -41,6 +43,7 @@ classdef Violin < handle
     %    WhiskerPlot - line <a href="matlab:help('plot')">plot</a> between the whisker ends
     %    MedianPlot  - <a href="matlab:help('scatter')">scatter</a> plot of the median (one point)
     %    NotchPlots  - <a href="matlab:help('scatter')">scatter</a> plots for the notch indicators
+    %    MeanPlot    - line <a href="matlab:help('plot')">plot</a> at mean value
 
     % Copyright (c) 2016, Bastian Bechtold
     % This code is released under the terms of the BSD 3-clause license
@@ -52,6 +55,7 @@ classdef Violin < handle
         WhiskerPlot % line plot between the whisker ends
         MedianPlot  % scatter plot of the median (one point)
         NotchPlots  % scatter plots for the notch indicators
+        MeanPlot    % line plot of the mean (horizontal line)
     end
 
     properties (Dependent=true)
@@ -62,6 +66,7 @@ classdef Violin < handle
         MedianColor % fill color of median and notches
         ShowData    % whether to show data points
         ShowNotches % whether to show notch indicators
+        ShowMean    % whether to show mean indicator
     end
 
     methods
@@ -94,6 +99,8 @@ classdef Violin < handle
             %                    Defaults to true
             %     'ShowNotches'  Whether to show notch indicators.
             %                    Defaults to false
+            %     'ShowMean'     Whether to show mean indicator.
+            %                    Defaults to false
 
             args = obj.checkInputs(data, pos, varargin{:});
             data = data(not(isnan(data)));
@@ -124,6 +131,13 @@ classdef Violin < handle
             jitter = 2*(rand(size(data))-0.5);
             obj.ScatterPlot = ...
                 scatter(pos + jitter.*jitterstrength, data, 'filled');
+
+            % plot the data mean
+            meanValue = mean(value);
+            meanDensity = interp1(value, density, meanValue);
+            obj.MeanPlot = plot([pos-meanDensity*width pos+meanDensity*width], ...
+                                [meanValue meanValue])
+            obj.MeanPlot.LineWidth = 0.75;
 
             % plot the violin
             obj.ViolinPlot =  ... % plot color will be overwritten later
@@ -162,6 +176,7 @@ classdef Violin < handle
             obj.ViolinAlpha = args.ViolinAlpha;
             obj.ShowData = args.ShowData;
             obj.ShowNotches = args.ShowNotches;
+            obj.ShowMean = args.ShowMean;
         end
 
         function set.EdgeColor(obj, color)
@@ -200,6 +215,7 @@ classdef Violin < handle
         function set.ViolinColor(obj, color)
             obj.ViolinPlot.FaceColor = color;
             obj.ScatterPlot.MarkerFaceColor = color;
+            obj.MeanPlot.Color = color;
         end
 
         function color = get.ViolinColor(obj)
@@ -240,6 +256,18 @@ classdef Violin < handle
         function yesno = get.ShowNotches(obj)
             yesno = logical(strcmp(obj.ScatterPlot.Visible, 'on'));
         end
+
+        function set.ShowMean(obj, yesno)
+            if yesno
+                obj.MeanPlot.Visible = 'on';
+            else
+                obj.MeanPlot.Visible = 'off';
+            end
+        end
+
+        function yesno = get.ShowMean(obj)
+            yesno = logical(strcmp(obj.MeanPlot.Visible, 'on'));
+        end
     end
 
     methods (Access=private)
@@ -259,6 +287,7 @@ classdef Violin < handle
             isscalarlogical = @(x) (islogical(x) & isscalar(x));
             p.addParameter('ShowData', true, isscalarlogical);
             p.addParameter('ShowNotches', false, isscalarlogical);
+            p.addParameter('ShowMean', false, isscalarlogical);
 
             p.parse(data, pos, varargin{:});
             results = p.Results;
