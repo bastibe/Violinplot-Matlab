@@ -136,7 +136,7 @@ classdef Violin < handle
             meanValue = mean(value);
             meanDensity = interp1(value, density, meanValue);
             obj.MeanPlot = plot([pos-meanDensity*width pos+meanDensity*width], ...
-                                [meanValue meanValue])
+                                [meanValue meanValue]);
             obj.MeanPlot.LineWidth = 0.75;
 
             % plot the violin
