@@ -152,9 +152,9 @@ classdef Violin < handle
                      [1 1 1]);
             IQR = quartiles(3) - quartiles(1);
             lowhisker = quartiles(1) - 1.5*IQR;
-            lowhisker = max(lowhisker, min(data));
+            lowhisker = max(lowhisker, min(data(data > lowhisker)));
             hiwhisker = quartiles(3) + 1.5*IQR;
-            hiwhisker = min(hiwhisker, max(data));
+            hiwhisker = min(hiwhisker, max(data(data < hiwhisker)));
             obj.WhiskerPlot = plot([pos pos], [lowhisker hiwhisker]);
             obj.MedianPlot = scatter(pos, quartiles(2), [], [1 1 1], 'filled');
 
