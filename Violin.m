@@ -120,6 +120,11 @@ classdef Violin < handle
             value(1) = min(data);
             value(end) = max(data);
 
+            % all data is identical
+            if min(data) == max(data)
+                density = 1;
+            end
+
             if isempty(args.Width)
                 width = 0.3/max(density);
             else
@@ -127,14 +132,22 @@ classdef Violin < handle
             end
 
             % plot the data points within the violin area
-            jitterstrength = interp1(value, density*width, data);
+            if length(density) > 1
+                jitterstrength = interp1(value, density*width, data);
+            else % all data is identical:
+                jitterstrength = density*width;
+            end
             jitter = 2*(rand(size(data))-0.5);
             obj.ScatterPlot = ...
                 scatter(pos + jitter.*jitterstrength, data, 'filled');
 
             % plot the data mean
             meanValue = mean(value);
-            meanDensity = interp1(value, density, meanValue);
+            if length(density) > 1
+                meanDensity = interp1(value, density, meanValue);
+            else % all data is identical:
+                meanDensity = density;
+            end
             obj.MeanPlot = plot([pos-meanDensity*width pos+meanDensity*width], ...
                                 [meanValue meanValue]);
             obj.MeanPlot.LineWidth = 0.75;
@@ -155,7 +168,9 @@ classdef Violin < handle
             lowhisker = max(lowhisker, min(data(data > lowhisker)));
             hiwhisker = quartiles(3) + 1.5*IQR;
             hiwhisker = min(hiwhisker, max(data(data < hiwhisker)));
-            obj.WhiskerPlot = plot([pos pos], [lowhisker hiwhisker]);
+            if ~isempty(lowhisker) && ~isempty(hiwhisker)
+                obj.WhiskerPlot = plot([pos pos], [lowhisker hiwhisker]);
+            end
             obj.MedianPlot = scatter(pos, quartiles(2), [], [1 1 1], 'filled');
 
             obj.NotchPlots = ...
