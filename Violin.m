@@ -141,28 +141,32 @@ classdef Violin < handle
             obj.ScatterPlot = ...
                 scatter(pos + jitter.*jitterstrength, data, 'filled');
 
-            % plot the data mean
-            meanValue = mean(value);
-            if length(density) > 1
-                meanDensity = interp1(value, density, meanValue);
-            else % all data is identical:
-                meanDensity = density;
-            end
-            obj.MeanPlot = plot([pos-meanDensity*width pos+meanDensity*width], ...
-                                [meanValue meanValue]);
-            obj.MeanPlot.LineWidth = 0.75;
-
             % plot the violin
             obj.ViolinPlot =  ... % plot color will be overwritten later
                 fill([pos+density*width pos-density(end:-1:1)*width], ...
                      [value value(end:-1:1)], [1 1 1]);
 
             % plot the mini-boxplot within the violin
-            quartiles = quantile(data, [0.25, 0.5, 0.75]);
+            quartiles = quantile(data, [0.25, 0.5, 0.75]);         
             obj.BoxPlot = ... % plot color will be overwritten later
                 fill([pos-0.01 pos+0.01 pos+0.01 pos-0.01], ...
                      [quartiles(1) quartiles(1) quartiles(3) quartiles(3)], ...
                      [1 1 1]);
+                 
+            % plot the data mean
+            meanValue = mean(data);
+            if length(density) > 1
+                meanDensityWidth = interp1(value, density, meanValue)*width;
+            else % all data is identical:
+                meanDensityWidth = density*width;
+            end
+            if meanDensityWidth<args.BoxWidth/2
+                meanDensityWidth=args.BoxWidth/2;
+            end
+            obj.MeanPlot = plot(pos+[-1,1].*meanDensityWidth, ...
+                                [meanValue, meanValue]);
+            obj.MeanPlot.LineWidth = 1;
+                 
             IQR = quartiles(3) - quartiles(1);
             lowhisker = quartiles(1) - 1.5*IQR;
             lowhisker = max(lowhisker, min(data(data > lowhisker)));
