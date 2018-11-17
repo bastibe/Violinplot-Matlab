@@ -255,7 +255,7 @@ classdef Violin < handle
         end
 
         function yesno = get.ShowData(obj)
-            yesno = logical(strcmp(obj.NotchPlots(1).Visible, 'on'));
+            yesno = strcmp(obj.ScatterPlot.Visible, 'on');
         end
 
         function set.ShowNotches(obj, yesno)
@@ -269,7 +269,7 @@ classdef Violin < handle
         end
 
         function yesno = get.ShowNotches(obj)
-            yesno = logical(strcmp(obj.ScatterPlot.Visible, 'on'));
+            yesno = strcmp(obj.NotchPlots(1).Visible, 'on');
         end
 
         function set.ShowMean(obj, yesno)
@@ -281,7 +281,7 @@ classdef Violin < handle
         end
 
         function yesno = get.ShowMean(obj)
-            yesno = logical(strcmp(obj.MeanPlot.Visible, 'on'));
+            yesno = strcmp(obj.MeanPlot.Visible, 'on');
         end
     end
 

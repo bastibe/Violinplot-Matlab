@@ -48,7 +48,7 @@ function violins = violinplot(data, cats, varargin)
 % Copyright (c) 2016, Bastian Bechtold
 % This code is released under the terms of the BSD 3-clause license
 
-    hascategories = exist('cats') && not(isempty(cats));
+    hascategories = exist('cats','var') && not(isempty(cats));
 
     % tabular data
     if isa(data, 'dataset') || isstruct(data) || istable(data)
