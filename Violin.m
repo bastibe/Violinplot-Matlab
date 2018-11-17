@@ -63,6 +63,7 @@ classdef Violin < handle
         ViolinAlpha % transparency of the violin area and data points
         EdgeColor   % color of the violin area outline
         BoxColor    % color of box, whiskers, and median/notch edges
+        BoxWidth    % width of box between the quartiles in axis space (default 10% of Violin plot width, 0.03)
         MedianColor % fill color of median and notches
         ShowData    % whether to show data points
         ShowNotches % whether to show notch indicators
@@ -149,7 +150,7 @@ classdef Violin < handle
             % plot the mini-boxplot within the violin
             quartiles = quantile(data, [0.25, 0.5, 0.75]);         
             obj.BoxPlot = ... % plot color will be overwritten later
-                fill([pos-0.01 pos+0.01 pos+0.01 pos-0.01], ...
+                fill(pos+[-1,1,1,-1]*args.BoxWidth/2, ...
                      [quartiles(1) quartiles(1) quartiles(3) quartiles(3)], ...
                      [1 1 1]);
                  
@@ -186,6 +187,7 @@ classdef Violin < handle
 
             obj.EdgeColor = args.EdgeColor;
             obj.BoxColor = args.BoxColor;
+            obj.BoxWidth = args.BoxWidth;
             obj.MedianColor = args.MedianColor;
             if not(isempty(args.ViolinColor))
                 obj.ViolinColor = args.ViolinColor;
@@ -229,6 +231,15 @@ classdef Violin < handle
 
         function color = get.BoxColor(obj)
             color = obj.BoxPlot.FaceColor;
+        end
+        
+        function set.BoxWidth(obj,width)
+            pos=mean(obj.BoxPlot.XData);
+            obj.BoxPlot.XData=pos+[-1,1,1,-1]*width/2;
+        end
+        
+        function width = get.BoxWidth(obj)
+            width=max(obj.BoxPlot.XData)-min(obj.BoxPlot.XData);
         end
 
         function set.ViolinColor(obj, color)
@@ -300,6 +311,7 @@ classdef Violin < handle
             iscolor = @(x) (isnumeric(x) & length(x) == 3);
             p.addParameter('ViolinColor', [], iscolor);
             p.addParameter('BoxColor', [0.5 0.5 0.5], iscolor);
+            p.addParameter('BoxWidth', 0.03, isscalarnumber);
             p.addParameter('EdgeColor', [0.5 0.5 0.5], iscolor);
             p.addParameter('MedianColor', [1 1 1], iscolor);
             p.addParameter('ViolinAlpha', 0.3, isscalarnumber);
