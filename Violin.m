@@ -201,16 +201,20 @@ classdef Violin < handle
         end
 
         function set.EdgeColor(obj, color)
-            obj.ViolinPlot.EdgeColor = color;
+            if ~isempty(obj.ViolinPlot)
+                obj.ViolinPlot.EdgeColor = color;
+            end
         end
 
         function color = get.EdgeColor(obj)
-            color = obj.ViolinPlot.EdgeColor;
+            if ~isempty(obj.ViolinPlot)
+                color = obj.ViolinPlot.EdgeColor;
+            end
         end
 
         function set.MedianColor(obj, color)
             obj.MedianPlot.MarkerFaceColor = color;
-            if not(isempty(obj.NotchPlots))
+            if ~isempty(obj.NotchPlots)
                 obj.NotchPlots(1).MarkerFaceColor = color;
                 obj.NotchPlots(2).MarkerFaceColor = color;
             end
@@ -221,21 +225,27 @@ classdef Violin < handle
         end
 
         function set.BoxColor(obj, color)
-            obj.BoxPlot.FaceColor = color;
-            obj.BoxPlot.EdgeColor = color;
-            obj.WhiskerPlot.Color = color;
-            obj.MedianPlot.MarkerEdgeColor = color;
-            obj.NotchPlots(1).MarkerEdgeColor = color;
-            obj.NotchPlots(2).MarkerEdgeColor = color;
+            if ~isempty(obj.BoxPlot)
+                obj.BoxPlot.FaceColor = color;
+                obj.BoxPlot.EdgeColor = color;
+                obj.WhiskerPlot.Color = color;
+                obj.MedianPlot.MarkerEdgeColor = color;
+                obj.NotchPlots(1).MarkerFaceColor = color;
+                obj.NotchPlots(2).MarkerFaceColor = color;
+            end
         end
 
         function color = get.BoxColor(obj)
-            color = obj.BoxPlot.FaceColor;
+            if ~isempty(obj.BoxPlot)
+                color = obj.BoxPlot.FaceColor;
+            end
         end
         
         function set.BoxWidth(obj,width)
-            pos=mean(obj.BoxPlot.XData);
-            obj.BoxPlot.XData=pos+[-1,1,1,-1]*width/2;
+            if ~isempty(obj.BoxPlot)
+                pos=mean(obj.BoxPlot.XData);
+                obj.BoxPlot.XData=pos+[-1,1,1,-1]*width/2;
+            end
         end
         
         function width = get.BoxWidth(obj)
@@ -270,33 +280,43 @@ classdef Violin < handle
         end
 
         function yesno = get.ShowData(obj)
-            yesno = strcmp(obj.ScatterPlot.Visible, 'on');
+            if ~isempty(obj.ScatterPlot)
+                yesno = strcmp(obj.ScatterPlot.Visible, 'on');
+            end
         end
 
         function set.ShowNotches(obj, yesno)
-            if yesno
-                obj.NotchPlots(1).Visible = 'on';
-                obj.NotchPlots(2).Visible = 'on';
-            else
-                obj.NotchPlots(1).Visible = 'off';
-                obj.NotchPlots(2).Visible = 'off';
+            if ~isempty(obj.NotchPlots)
+                if yesno
+                    obj.NotchPlots(1).Visible = 'on';
+                    obj.NotchPlots(2).Visible = 'on';
+                else
+                    obj.NotchPlots(1).Visible = 'off';
+                    obj.NotchPlots(2).Visible = 'off';
+                end
             end
         end
 
         function yesno = get.ShowNotches(obj)
-            yesno = strcmp(obj.NotchPlots(1).Visible, 'on');
+            if ~isempty(obj.NotchPlots)
+                yesno = strcmp(obj.NotchPlots(1).Visible, 'on');
+            end
         end
 
         function set.ShowMean(obj, yesno)
-            if yesno
-                obj.MeanPlot.Visible = 'on';
-            else
-                obj.MeanPlot.Visible = 'off';
+            if ~isempty(obj.MeanPlot)
+                if yesno
+                    obj.MeanPlot.Visible = 'on';
+                else
+                    obj.MeanPlot.Visible = 'off';
+                end
             end
         end
 
         function yesno = get.ShowMean(obj)
-            yesno = strcmp(obj.MeanPlot.Visible, 'on');
+            if ~isempty(obj.MeanPlot)
+                yesno = strcmp(obj.MeanPlot.Visible, 'on');
+            end
         end
     end
 
