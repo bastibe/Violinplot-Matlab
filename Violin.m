@@ -63,6 +63,7 @@ classdef Violin < handle
         ViolinAlpha % transparency of the violin area and data points
         EdgeColor   % color of the violin area outline
         BoxColor    % color of box, whiskers, and median/notch edges
+        BoxWidth    % width of box between the quartiles in axis space (default 10% of Violin plot width, 0.03)
         MedianColor % fill color of median and notches
         ShowData    % whether to show data points
         ShowNotches % whether to show notch indicators
@@ -125,11 +126,7 @@ classdef Violin < handle
                 density = 1;
             end
 
-            if isempty(args.Width)
-                width = 0.3/max(density);
-            else
-                width = args.Width/max(density);
-            end
+            width = args.Width/max(density);
 
             % plot the data points within the violin area
             if length(density) > 1
@@ -141,28 +138,32 @@ classdef Violin < handle
             obj.ScatterPlot = ...
                 scatter(pos + jitter.*jitterstrength, data, 'filled');
 
-            % plot the data mean
-            meanValue = mean(value);
-            if length(density) > 1
-                meanDensity = interp1(value, density, meanValue);
-            else % all data is identical:
-                meanDensity = density;
-            end
-            obj.MeanPlot = plot([pos-meanDensity*width pos+meanDensity*width], ...
-                                [meanValue meanValue]);
-            obj.MeanPlot.LineWidth = 0.75;
-
             % plot the violin
             obj.ViolinPlot =  ... % plot color will be overwritten later
                 fill([pos+density*width pos-density(end:-1:1)*width], ...
                      [value value(end:-1:1)], [1 1 1]);
 
             % plot the mini-boxplot within the violin
-            quartiles = quantile(data, [0.25, 0.5, 0.75]);
+            quartiles = quantile(data, [0.25, 0.5, 0.75]);         
             obj.BoxPlot = ... % plot color will be overwritten later
-                fill([pos-0.01 pos+0.01 pos+0.01 pos-0.01], ...
+                fill(pos+[-1,1,1,-1]*args.BoxWidth, ...
                      [quartiles(1) quartiles(1) quartiles(3) quartiles(3)], ...
                      [1 1 1]);
+                 
+            % plot the data mean
+            meanValue = mean(data);
+            if length(density) > 1
+                meanDensityWidth = interp1(value, density, meanValue)*width;
+            else % all data is identical:
+                meanDensityWidth = density*width;
+            end
+            if meanDensityWidth<args.BoxWidth/2
+                meanDensityWidth=args.BoxWidth/2;
+            end
+            obj.MeanPlot = plot(pos+[-1,1].*meanDensityWidth, ...
+                                [meanValue, meanValue]);
+            obj.MeanPlot.LineWidth = 1;
+                 
             IQR = quartiles(3) - quartiles(1);
             lowhisker = quartiles(1) - 1.5*IQR;
             lowhisker = max(lowhisker, min(data(data > lowhisker)));
@@ -182,6 +183,7 @@ classdef Violin < handle
 
             obj.EdgeColor = args.EdgeColor;
             obj.BoxColor = args.BoxColor;
+            obj.BoxWidth = args.BoxWidth;
             obj.MedianColor = args.MedianColor;
             if not(isempty(args.ViolinColor))
                 obj.ViolinColor = args.ViolinColor;
@@ -195,16 +197,20 @@ classdef Violin < handle
         end
 
         function set.EdgeColor(obj, color)
-            obj.ViolinPlot.EdgeColor = color;
+            if ~isempty(obj.ViolinPlot)
+                obj.ViolinPlot.EdgeColor = color;
+            end
         end
 
         function color = get.EdgeColor(obj)
-            color = obj.ViolinPlot.EdgeColor;
+            if ~isempty(obj.ViolinPlot)
+                color = obj.ViolinPlot.EdgeColor;
+            end
         end
 
         function set.MedianColor(obj, color)
             obj.MedianPlot.MarkerFaceColor = color;
-            if not(isempty(obj.NotchPlots))
+            if ~isempty(obj.NotchPlots)
                 obj.NotchPlots(1).MarkerFaceColor = color;
                 obj.NotchPlots(2).MarkerFaceColor = color;
             end
@@ -215,16 +221,31 @@ classdef Violin < handle
         end
 
         function set.BoxColor(obj, color)
-            obj.BoxPlot.FaceColor = color;
-            obj.BoxPlot.EdgeColor = color;
-            obj.WhiskerPlot.Color = color;
-            obj.MedianPlot.MarkerEdgeColor = color;
-            obj.NotchPlots(1).MarkerEdgeColor = color;
-            obj.NotchPlots(2).MarkerEdgeColor = color;
+            if ~isempty(obj.BoxPlot)
+                obj.BoxPlot.FaceColor = color;
+                obj.BoxPlot.EdgeColor = color;
+                obj.WhiskerPlot.Color = color;
+                obj.MedianPlot.MarkerEdgeColor = color;
+                obj.NotchPlots(1).MarkerFaceColor = color;
+                obj.NotchPlots(2).MarkerFaceColor = color;
+            end
         end
 
         function color = get.BoxColor(obj)
-            color = obj.BoxPlot.FaceColor;
+            if ~isempty(obj.BoxPlot)
+                color = obj.BoxPlot.FaceColor;
+            end
+        end
+        
+        function set.BoxWidth(obj,width)
+            if ~isempty(obj.BoxPlot)
+                pos=mean(obj.BoxPlot.XData);
+                obj.BoxPlot.XData=pos+[-1,1,1,-1]*width;
+            end
+        end
+        
+        function width = get.BoxWidth(obj)
+            width=max(obj.BoxPlot.XData)-min(obj.BoxPlot.XData);
         end
 
         function set.ViolinColor(obj, color)
@@ -255,33 +276,43 @@ classdef Violin < handle
         end
 
         function yesno = get.ShowData(obj)
-            yesno = logical(strcmp(obj.NotchPlots(1).Visible, 'on'));
+            if ~isempty(obj.ScatterPlot)
+                yesno = strcmp(obj.ScatterPlot.Visible, 'on');
+            end
         end
 
         function set.ShowNotches(obj, yesno)
-            if yesno
-                obj.NotchPlots(1).Visible = 'on';
-                obj.NotchPlots(2).Visible = 'on';
-            else
-                obj.NotchPlots(1).Visible = 'off';
-                obj.NotchPlots(2).Visible = 'off';
+            if ~isempty(obj.NotchPlots)
+                if yesno
+                    obj.NotchPlots(1).Visible = 'on';
+                    obj.NotchPlots(2).Visible = 'on';
+                else
+                    obj.NotchPlots(1).Visible = 'off';
+                    obj.NotchPlots(2).Visible = 'off';
+                end
             end
         end
 
         function yesno = get.ShowNotches(obj)
-            yesno = logical(strcmp(obj.ScatterPlot.Visible, 'on'));
+            if ~isempty(obj.NotchPlots)
+                yesno = strcmp(obj.NotchPlots(1).Visible, 'on');
+            end
         end
 
         function set.ShowMean(obj, yesno)
-            if yesno
-                obj.MeanPlot.Visible = 'on';
-            else
-                obj.MeanPlot.Visible = 'off';
+            if ~isempty(obj.MeanPlot)
+                if yesno
+                    obj.MeanPlot.Visible = 'on';
+                else
+                    obj.MeanPlot.Visible = 'off';
+                end
             end
         end
 
         function yesno = get.ShowMean(obj)
-            yesno = logical(strcmp(obj.MeanPlot.Visible, 'on'));
+            if ~isempty(obj.MeanPlot)
+                yesno = strcmp(obj.MeanPlot.Visible, 'on');
+            end
         end
     end
 
@@ -291,11 +322,12 @@ classdef Violin < handle
             p = inputParser();
             p.addRequired('Data', @isnumeric);
             p.addRequired('Pos', isscalarnumber);
-            p.addParameter('Width', [], isscalarnumber);
+            p.addParameter('Width', 0.3, isscalarnumber);
             p.addParameter('Bandwidth', [], isscalarnumber);
             iscolor = @(x) (isnumeric(x) & length(x) == 3);
             p.addParameter('ViolinColor', [], iscolor);
             p.addParameter('BoxColor', [0.5 0.5 0.5], iscolor);
+            p.addParameter('BoxWidth', 0.01, isscalarnumber);
             p.addParameter('EdgeColor', [0.5 0.5 0.5], iscolor);
             p.addParameter('MedianColor', [1 1 1], iscolor);
             p.addParameter('ViolinAlpha', 0.3, isscalarnumber);
