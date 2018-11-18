@@ -126,11 +126,7 @@ classdef Violin < handle
                 density = 1;
             end
 
-            if isempty(args.Width)
-                width = 0.3/max(density);
-            else
-                width = args.Width/max(density);
-            end
+            width = args.Width/max(density);
 
             % plot the data points within the violin area
             if length(density) > 1
@@ -150,7 +146,7 @@ classdef Violin < handle
             % plot the mini-boxplot within the violin
             quartiles = quantile(data, [0.25, 0.5, 0.75]);         
             obj.BoxPlot = ... % plot color will be overwritten later
-                fill(pos+[-1,1,1,-1]*args.BoxWidth/2, ...
+                fill(pos+[-1,1,1,-1]*args.BoxWidth, ...
                      [quartiles(1) quartiles(1) quartiles(3) quartiles(3)], ...
                      [1 1 1]);
                  
@@ -244,7 +240,7 @@ classdef Violin < handle
         function set.BoxWidth(obj,width)
             if ~isempty(obj.BoxPlot)
                 pos=mean(obj.BoxPlot.XData);
-                obj.BoxPlot.XData=pos+[-1,1,1,-1]*width/2;
+                obj.BoxPlot.XData=pos+[-1,1,1,-1]*width;
             end
         end
         
@@ -326,12 +322,12 @@ classdef Violin < handle
             p = inputParser();
             p.addRequired('Data', @isnumeric);
             p.addRequired('Pos', isscalarnumber);
-            p.addParameter('Width', [], isscalarnumber);
+            p.addParameter('Width', 0.3, isscalarnumber);
             p.addParameter('Bandwidth', [], isscalarnumber);
             iscolor = @(x) (isnumeric(x) & length(x) == 3);
             p.addParameter('ViolinColor', [], iscolor);
             p.addParameter('BoxColor', [0.5 0.5 0.5], iscolor);
-            p.addParameter('BoxWidth', 0.03, isscalarnumber);
+            p.addParameter('BoxWidth', 0.01, isscalarnumber);
             p.addParameter('EdgeColor', [0.5 0.5 0.5], iscolor);
             p.addParameter('MedianColor', [1 1 1], iscolor);
             p.addParameter('ViolinAlpha', 0.3, isscalarnumber);
