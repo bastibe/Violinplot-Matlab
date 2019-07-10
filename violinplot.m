@@ -49,7 +49,6 @@ function violins = violinplot(data, cats, varargin)
 
 % Copyright (c) 2016, Bastian Bechtold
 % This code is released under the terms of the BSD 3-clause license
-%modified 190606 to allow category ordering
 
     hascategories = exist('cats','var') && not(isempty(cats));
     grouporder = {};
