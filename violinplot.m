@@ -90,7 +90,7 @@ function violins = violinplot(data, cats, varargin)
         if isempty(grouporder)
             cats = categorical(cats);
         else
-            cats = categorical(cats,grouporder);
+            cats = categorical(cats, grouporder);
         end
 
         catnames = categories(cats);
