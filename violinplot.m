@@ -44,11 +44,27 @@ function violins = violinplot(data, cats, varargin)
 %                    Defaults to false
 %     'ShowMean'     Whether to show mean indicator
 %                    Defaults to false
+%     'GroupOrder'   Cell of category names in order to be plotted.
+%                    Defaults to alphabetical ordering
 
 % Copyright (c) 2016, Bastian Bechtold
 % This code is released under the terms of the BSD 3-clause license
 
     hascategories = exist('cats','var') && not(isempty(cats));
+    
+    %parse the optional grouporder argument 
+    %if it exists parse the categories order 
+    % but also delete it from the arguments passed to Violin
+    grouporder = {};
+    idx=find(strcmp(varargin, 'GroupOrder'));
+    if ~isempty(idx) && numel(varargin)>idx
+        if iscell(varargin{idx+1})
+            grouporder = varargin{idx+1};
+            varargin(idx:idx+1)=[];
+        else
+            error('Second argument of ''GroupOrder'' optional arg must be a cell of category names')
+        end
+    end
 
     % tabular data
     if isa(data, 'dataset') || isstruct(data) || istable(data)
@@ -73,7 +89,12 @@ function violins = violinplot(data, cats, varargin)
 
     % 1D data, one category for each data point
     elseif hascategories && numel(data) == numel(cats)
-        cats = categorical(cats);
+        if isempty(grouporder)
+            cats = categorical(cats);
+        else
+            cats = categorical(cats, grouporder);
+        end
+
         catnames = categories(cats);
         for n=1:length(catnames)
             thisCat = catnames{n};
