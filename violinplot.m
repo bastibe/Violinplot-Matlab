@@ -51,18 +51,20 @@ function violins = violinplot(data, cats, varargin)
 % This code is released under the terms of the BSD 3-clause license
 
     hascategories = exist('cats','var') && not(isempty(cats));
+    
+    %parse the optional grouporder argument 
+    %if it exists parse the categories order 
+    % but also delete it from the arguments passed to Violin
     grouporder = {};
-    ii=1;
-    while ii<=numel(varargin)
-        if strcmp(varargin{ii},'GroupOrder')
-            grouporder = varargin{ii+1};
-            varargin(ii:ii+1)=[];
-            ii=ii+2;
+    idx=find(strcmp(varargin, 'GroupOrder'));
+    if ~isempty(idx) && numel(varargin)>idx
+        if iscell(varargin{idx+1})
+            grouporder = varargin{idx+1};
+            varargin(idx:idx+1)=[];
         else
-            ii=ii+1;
+            error('Second argument of ''GroupOrder'' optional arg must be a cell of category names')
         end
     end
-
 
     % tabular data
     if isa(data, 'dataset') || isstruct(data) || istable(data)
