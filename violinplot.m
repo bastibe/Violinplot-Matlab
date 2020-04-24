@@ -104,7 +104,7 @@ function violins = violinplot(data, cats, varargin)
             thisData = data(cats == thisCat);
             violins(n) = Violin(thisData, n, varargin{:});
         end
-        set(gca, 'XTick', 1:length(catnames), 'XTickLabels', catnames_labels,'XTickLabelRotation',45);
+        set(gca, 'XTick', 1:length(catnames), 'XTickLabels', catnames_labels);
 
     % 1D data, no categories
     elseif not(hascategories) && isvector(data)
