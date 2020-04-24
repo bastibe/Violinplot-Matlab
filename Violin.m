@@ -115,6 +115,9 @@ classdef Violin < handle
             hold('on');
 
             % calculate kernel density estimation for the violin
+            if isempty(data)
+                return
+            end
             [density, value] = ksdensity(data, 'bandwidth', args.Bandwidth);
             density = density(value >= min(data) & value <= max(data));
             value = value(value >= min(data) & value <= max(data));
