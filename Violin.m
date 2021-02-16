@@ -106,13 +106,13 @@ classdef Violin < handle
             args = obj.checkInputs(data, pos, varargin{:});
             data = data(not(isnan(data)));
             if numel(data) == 1
-                obj.MedianPlot = scatter(pos, data, 'filled');
+                obj.MedianPlot = scatter(args.Parent, pos, data, 'filled');
                 obj.MedianColor = args.MedianColor;
                 obj.MedianPlot.MarkerEdgeColor = args.EdgeColor;
                 return
             end
 
-            hold('on');
+            hold(args.Parent, 'on');
 
             % calculate kernel density estimation for the violin
             if isempty(data)
@@ -139,19 +139,19 @@ classdef Violin < handle
             end
             jitter = 2*(rand(size(data))-0.5);
             obj.ScatterPlot = ...
-                scatter(pos + jitter.*jitterstrength, data, 'filled');
+                scatter(args.Parent, pos + jitter.*jitterstrength, data, 'filled');
 
             % plot the violin
             obj.ViolinPlot =  ... % plot color will be overwritten later
                 fill([pos+density*width pos-density(end:-1:1)*width], ...
-                     [value value(end:-1:1)], [1 1 1]);
+                     [value value(end:-1:1)], [1 1 1], 'Parent', args.Parent);
 
             % plot the mini-boxplot within the violin
             quartiles = quantile(data, [0.25, 0.5, 0.75]);         
             obj.BoxPlot = ... % plot color will be overwritten later
                 fill(pos+[-1,1,1,-1]*args.BoxWidth, ...
                      [quartiles(1) quartiles(1) quartiles(3) quartiles(3)], ...
-                     [1 1 1]);
+                     [1 1 1], 'Parent', args.Parent);
                  
             % plot the data mean
             meanValue = mean(data);
@@ -163,7 +163,7 @@ classdef Violin < handle
             if meanDensityWidth<args.BoxWidth/2
                 meanDensityWidth=args.BoxWidth/2;
             end
-            obj.MeanPlot = plot(pos+[-1,1].*meanDensityWidth, ...
+            obj.MeanPlot = plot(args.Parent, pos+[-1,1].*meanDensityWidth, ...
                                 [meanValue, meanValue]);
             obj.MeanPlot.LineWidth = 1;
                  
@@ -173,15 +173,15 @@ classdef Violin < handle
             hiwhisker = quartiles(3) + 1.5*IQR;
             hiwhisker = min(hiwhisker, max(data(data < hiwhisker)));
             if ~isempty(lowhisker) && ~isempty(hiwhisker)
-                obj.WhiskerPlot = plot([pos pos], [lowhisker hiwhisker]);
+                obj.WhiskerPlot = plot(args.Parent, [pos pos], [lowhisker hiwhisker]);
             end
-            obj.MedianPlot = scatter(pos, quartiles(2), [], [1 1 1], 'filled');
+            obj.MedianPlot = scatter(args.Parent, pos, quartiles(2), [], [1 1 1], 'filled');
 
             obj.NotchPlots = ...
-                 scatter(pos, quartiles(2)-1.57*IQR/sqrt(length(data)), ...
+                 scatter(args.Parent, pos, quartiles(2)-1.57*IQR/sqrt(length(data)), ...
                          [], [1 1 1], 'filled', '^');
             obj.NotchPlots(2) = ...
-                 scatter(pos, quartiles(2)+1.57*IQR/sqrt(length(data)), ...
+                 scatter(args.Parent, pos, quartiles(2)+1.57*IQR/sqrt(length(data)), ...
                          [], [1 1 1], 'filled', 'v');
 
             obj.EdgeColor = args.EdgeColor;
@@ -197,6 +197,7 @@ classdef Violin < handle
             obj.ShowData = args.ShowData;
             obj.ShowNotches = args.ShowNotches;
             obj.ShowMean = args.ShowMean;
+            uistack(obj.ViolinPlot,'bottom');
         end
 
         function set.EdgeColor(obj, color)
@@ -338,6 +339,7 @@ classdef Violin < handle
             p.addParameter('ShowData', true, isscalarlogical);
             p.addParameter('ShowNotches', false, isscalarlogical);
             p.addParameter('ShowMean', false, isscalarlogical);
+            p.addParameter('Parent', gca, @ishghandle);
 
             p.parse(data, pos, varargin{:});
             results = p.Results;
