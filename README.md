@@ -30,3 +30,12 @@ xlim([0.5, 7.5]);
 ```
 
 ![example image](example.png)
+
+## Citation
+
+[![DOI](https://zenodo.org/badge/60771923.svg)](https://zenodo.org/badge/latestdoi/60771923)
+
+If you want to cite this repository, use 
+
+> Bechtold, Bastian, 2016. Violin Plots for Matlab, Github Project  
+> https://github.com/bastibe/Violinplot-Matlab, DOI: 10.5281/zenodo.4559847
