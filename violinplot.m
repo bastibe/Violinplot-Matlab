@@ -1,4 +1,4 @@
-function violins = violinplot(data, cats, varargin)
+function varargout = violinplot(data, cats, varargin)
 %Violinplots plots violin plots of some data and categories
 %   VIOLINPLOT(DATA) plots a violin of a double vector DATA
 %
@@ -46,17 +46,19 @@ function violins = violinplot(data, cats, varargin)
 %                    Defaults to false
 %     'GroupOrder'   Cell of category names in order to be plotted.
 %                    Defaults to alphabetical ordering
+%     'Parent'       Axis handle to plot in
+%                    Defaults to gca
 
 % Copyright (c) 2016, Bastian Bechtold
 % This code is released under the terms of the BSD 3-clause license
 
     hascategories = exist('cats','var') && not(isempty(cats));
     
-    %parse the optional grouporder argument 
-    %if it exists parse the categories order 
+    % parse the optional grouporder argument 
+    % if it exists parse the categories order 
     % but also delete it from the arguments passed to Violin
     grouporder = {};
-    idx=find(strcmp(varargin, 'GroupOrder'));
+    idx = find(strcmp(varargin, 'GroupOrder'));
     if ~isempty(idx) && numel(varargin)>idx
         if iscell(varargin{idx+1})
             grouporder = varargin{idx+1};
@@ -65,6 +67,19 @@ function violins = violinplot(data, cats, varargin)
             error('Second argument of ''GroupOrder'' optional arg must be a cell of category names')
         end
     end
+    
+    % parse the optional axis handle
+    AxisHandle = gca;
+    idx = find(strcmp(varargin, 'Parent'));
+    if ~isempty(idx) && numel(varargin)>idx
+        if ishghandle(varargin{idx+1})
+            AxisHandle = varargin{idx+1};
+        else
+            error('Second argument of ''Parent'' optional arg must be a valid axis handle')
+        end
+    end
+    
+    
 
     % tabular data
     if isa(data, 'dataset') || isstruct(data) || istable(data)
@@ -85,7 +100,7 @@ function violins = violinplot(data, cats, varargin)
             thisData = data.(catnames{n});
             violins(n) = Violin(thisData, n, varargin{:});
         end
-        set(gca, 'XTick', 1:length(catnames), 'XTickLabels', catnames);
+        set(AxisHandle, 'XTick', 1:length(catnames), 'XTickLabel', catnames);
 
     % 1D data, one category for each data point
     elseif hascategories && numel(data) == numel(cats)
@@ -104,12 +119,12 @@ function violins = violinplot(data, cats, varargin)
             thisData = data(cats == thisCat);
             violins(n) = Violin(thisData, n, varargin{:});
         end
-        set(gca, 'XTick', 1:length(catnames), 'XTickLabels', catnames_labels);
+        set(AxisHandle, 'XTick', 1:length(catnames), 'XTickLabel', catnames_labels);
 
     % 1D data, no categories
     elseif not(hascategories) && isvector(data)
         violins = Violin(data, 1, varargin{:});
-        set(gca, 'XTick', 1);
+        set(AxisHandle, 'XTick', 1);
 
     % 2D data with or without categories
     elseif ismatrix(data)
@@ -117,11 +132,15 @@ function violins = violinplot(data, cats, varargin)
             thisData = data(:, n);
             violins(n) = Violin(thisData, n, varargin{:});
         end
-        set(gca, 'XTick', 1:size(data, 2));
+        set(AxisHandle, 'XTick', 1:size(data, 2));
         if hascategories && length(cats) == size(data, 2)
-            set(gca, 'XTickLabels', cats);
+            set(AxisHandle, 'XTickLabel', cats);
         end
 
+    end
+    
+    if nargout > 0
+        varargout{1} = violins;
     end
 
 end
