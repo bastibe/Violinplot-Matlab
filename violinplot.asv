@@ -93,6 +93,21 @@ function violins = violinplot(data, cats, varargin)
             end
         end
         
+        % test if have multi-dim color and user defined group ordering. If
+        % so, sort colors to match grouporder
+        if any(strcmp(varargin, 'ViolinColor'))
+            color_param_n = find(strcmp(varargin, 'ViolinColor'));
+            color_input = varargin{color_param_n + 1};
+            if size(color_input,1) > 1 && ~isempty(grouporder) 
+                g_index = NaN(1, length(colnames));
+                for group_n = 1:length(colnames)
+                    g_index(group_n) = strmatch(colnames{group_n}, grouporder);
+                end
+                sorted_colors = color_input(g_index,:);
+                varargin{color_param_n} = sorted_colors;
+            end
+        end
+    
         for n=1:length(catnames)
             thisData = data.(catnames{n});
             violins(n) = Violin(thisData, n, varargin{:});

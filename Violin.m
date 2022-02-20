@@ -189,7 +189,11 @@ classdef Violin < handle
             obj.BoxWidth = args.BoxWidth;
             obj.MedianColor = args.MedianColor;
             if not(isempty(args.ViolinColor))
-                obj.ViolinColor = args.ViolinColor;
+                if size(args.ViolinColor,1) > 1
+                    obj.ViolinColor = args.ViolinColor(pos,:);
+                else
+                    obj.ViolinColor = args.ViolinColor;
+                end
             else
                 obj.ViolinColor = obj.ScatterPlot.CData;
             end
@@ -327,7 +331,7 @@ classdef Violin < handle
             p.addRequired('Pos', isscalarnumber);
             p.addParameter('Width', 0.3, isscalarnumber);
             p.addParameter('Bandwidth', [], isscalarnumber);
-            iscolor = @(x) (isnumeric(x) & length(x) == 3);
+            iscolor = @(x) (isnumeric(x) & size(x,2) == 3);
             p.addParameter('ViolinColor', [], iscolor);
             p.addParameter('BoxColor', [0.5 0.5 0.5], iscolor);
             p.addParameter('BoxWidth', 0.01, isscalarnumber);
