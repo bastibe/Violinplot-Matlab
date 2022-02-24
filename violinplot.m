@@ -27,7 +27,9 @@ function violins = violinplot(data, cats, varargin)
 %                    Defaults to 0.3
 %     'Bandwidth'    Bandwidth of the kernel density estimate.
 %                    Should be between 10% and 40% of the data range.
-%     'ViolinColor'  Fill color of the violin area and data points.
+%     'ViolinColor'  Fill color of the violin area and data points. Accepts
+%                    1x3 color vector or nx3 color vector where n = num
+%                    groups
 %                    Defaults to the next default color cycle.
 %     'ViolinAlpha'  Transparency of the violin area and data points.
 %                    Defaults to 0.3.
@@ -65,7 +67,7 @@ function violins = violinplot(data, cats, varargin)
             error('Second argument of ''GroupOrder'' optional arg must be a cell of category names')
         end
     end
-
+    
     % tabular data
     if isa(data, 'dataset') || isstruct(data) || istable(data)
         if isa(data, 'dataset')
@@ -76,11 +78,21 @@ function violins = violinplot(data, cats, varargin)
             colnames = fieldnames(data);
         end
         catnames = {};
-        for n=1:length(colnames)
-            if isnumeric(data.(colnames{n}))
-                catnames = [catnames colnames{n}];
+        if isempty(grouporder)
+            for n=1:length(colnames)
+                if isnumeric(data.(colnames{n}))
+                    catnames = [catnames colnames{n}];
+                end
+            end
+            catnames = sort(catnames);
+        else
+            for n=1:length(grouporder)
+                if isnumeric(data.(grouporder{n}))
+                    catnames = [catnames grouporder{n}];
+                end
             end
         end
+        
         for n=1:length(catnames)
             thisData = data.(catnames{n});
             violins(n) = Violin(thisData, n, varargin{:});
