@@ -52,88 +52,120 @@ function violins = violinplot(data, cats, varargin)
 % Copyright (c) 2016, Bastian Bechtold
 % This code is released under the terms of the BSD 3-clause license
 
-    hascategories = exist('cats','var') && not(isempty(cats));
-    
-    %parse the optional grouporder argument 
-    %if it exists parse the categories order 
-    % but also delete it from the arguments passed to Violin
-    grouporder = {};
-    idx=find(strcmp(varargin, 'GroupOrder'));
-    if ~isempty(idx) && numel(varargin)>idx
-        if iscell(varargin{idx+1})
-            grouporder = varargin{idx+1};
-            varargin(idx:idx+1)=[];
-        else
-            error('Second argument of ''GroupOrder'' optional arg must be a cell of category names')
+hascategories = exist('cats','var') && not(isempty(cats));
+
+%parse the optional grouporder argument
+%if it exists parse the categories order
+% but also delete it from the arguments passed to Violin
+grouporder = {};
+idx=find(strcmp(varargin, 'GroupOrder'));
+if ~isempty(idx) && numel(varargin)>idx
+    if iscell(varargin{idx+1})
+        grouporder = varargin{idx+1};
+        varargin(idx:idx+1)=[];
+    else
+        error('Second argument of ''GroupOrder'' optional arg must be a cell of category names')
+    end
+end
+
+% check and correct the structure of ViolinColor input
+idx=find(strcmp(varargin, 'ViolinColor'));
+if ~isempty(idx) && iscell(varargin{idx+1})
+    if length(varargin{idx+1}(:))>2
+        error('ViolinColor input can be at most a two element cell array');
+    end
+elseif ~isempty(idx) && isnumeric(varargin{idx+1})
+    varargin{idx+1} = varargin(idx+1);
+end
+
+% check and correct the structure of ViolinAlpha input
+idx=find(strcmp(varargin, 'ViolinAlpha'));
+if ~isempty(idx) && iscell(varargin{idx+1})
+    if length(varargin{idx+1}(:))>2
+        error('ViolinAlpha input can be at most a two element cell array');
+    end
+elseif ~isempty(idx) && isnumeric(varargin{idx+1})
+    varargin{idx+1} = varargin(idx+1);
+end
+
+% tabular data
+if isa(data, 'dataset') || isstruct(data) || istable(data)
+    if isa(data, 'dataset')
+        colnames = data.Properties.VarNames;
+    elseif istable(data)
+        colnames = data.Properties.VariableNames;
+    elseif isstruct(data)
+        colnames = fieldnames(data);
+    end
+    catnames = {};
+    if isempty(grouporder)
+        for n=1:length(colnames)
+            if isnumeric(data.(colnames{n}))
+                catnames = [catnames colnames{n}]; %#ok<*AGROW>
+            end
+        end
+        catnames = sort(catnames);
+    else
+        for n=1:length(grouporder)
+            if isnumeric(data.(grouporder{n}))
+                catnames = [catnames grouporder{n}];
+            end
         end
     end
     
-    % tabular data
-    if isa(data, 'dataset') || isstruct(data) || istable(data)
-        if isa(data, 'dataset')
-            colnames = data.Properties.VarNames;
-        elseif istable(data)
-            colnames = data.Properties.VariableNames;
-        elseif isstruct(data)
-            colnames = fieldnames(data);
-        end
-        catnames = {};
-        if isempty(grouporder)
-            for n=1:length(colnames)
-                if isnumeric(data.(colnames{n}))
-                    catnames = [catnames colnames{n}];
-                end
-            end
-            catnames = sort(catnames);
-        else
-            for n=1:length(grouporder)
-                if isnumeric(data.(grouporder{n}))
-                    catnames = [catnames grouporder{n}];
-                end
-            end
-        end
-        
-        for n=1:length(catnames)
-            thisData = data.(catnames{n});
-            violins(n) = Violin(thisData, n, varargin{:});
-        end
-        set(gca, 'XTick', 1:length(catnames), 'XTickLabels', catnames);
-
+    for n=1:length(catnames)
+        thisData = data.(catnames{n});
+        violins(n) = Violin(thisData, n, varargin{:});
+    end
+    set(gca, 'XTick', 1:length(catnames), 'XTickLabels', catnames);
+    
+elseif iscell(data) && length(data(:))==2 % cell input
+    if not(size(data{1},2)==size(data{2},2))
+        error('The two input data matrices have to have the same number of columns');
+    end
+elseif iscell(data) && length(data(:))>2 % cell input
+    error('Up to two datasets can be compared');
+elseif isnumeric(data) % numeric input
+    
     % 1D data, one category for each data point
-    elseif hascategories && numel(data) == numel(cats)
-
+    if hascategories && numel(data) == numel(cats)
+        
         if isempty(grouporder)
             cats = categorical(cats);
         else
             cats = categorical(cats, grouporder);
         end
-
+        
         catnames = (unique(cats)); % this ignores categories without any data
         catnames_labels = {};
         for n = 1:length(catnames)
             thisCat = catnames(n);
             catnames_labels{n} = char(thisCat);
             thisData = data(cats == thisCat);
-            violins(n) = Violin(thisData, n, varargin{:});
+            violins(n) = Violin({thisData}, n, varargin{:});
         end
         set(gca, 'XTick', 1:length(catnames), 'XTickLabels', catnames_labels);
-
-    % 1D data, no categories
-    elseif not(hascategories) && isvector(data)
-        violins = Violin(data, 1, varargin{:});
-        set(gca, 'XTick', 1);
-
-    % 2D data with or without categories
-    elseif ismatrix(data)
-        for n=1:size(data, 2)
-            thisData = data(:, n);
-            violins(n) = Violin(thisData, n, varargin{:});
-        end
-        set(gca, 'XTick', 1:size(data, 2));
-        if hascategories && length(cats) == size(data, 2)
-            set(gca, 'XTickLabels', cats);
-        end
-
+    else
+        data = {data};
     end
+end
+
+% 1D data, no categories
+if not(hascategories) && isvector(data{1})
+    violins = Violin(data, 1, varargin{:});
+    set(gca, 'XTick', 1);
+    
+% 2D data with or without categories
+elseif ismatrix(data{1})
+    for n=1:size(data{1}, 2)
+        thisData = cellfun(@(x)x(:,n),data,'UniformOutput',false);
+        violins(n) = Violin(thisData, n, varargin{:});
+    end
+    set(gca, 'XTick', 1:size(data, 2));
+    if hascategories && length(cats) == size(data, 2)
+        set(gca, 'XTickLabels', cats);
+    end
+    
+end
 
 end
