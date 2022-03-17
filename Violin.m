@@ -3,10 +3,13 @@ classdef Violin < handle
     %   A violin plot is an easy to read substitute for a box plot
     %   that replaces the box shape with a kernel density estimate of
     %   the data, and optionally overlays the data points itself.
+    %   It is also possible to provide two sets of data which are supposed
+    %   to be compared by plotting each column of the two datasets together
+    %   on each side of the violin.
     %
     %   Additional constructor parameters include the width of the
-    %   plot, the bandwidth of the kernel density estimation, and the
-    %   X-axis position of the violin plot.
+    %   plot, the bandwidth of the kernel density estimation, the
+    %   X-axis position of the violin plot, and the categories.
     %
     %   Use <a href="matlab:help('violinplot')">violinplot</a> for a
     %   <a href="matlab:help('boxplot')">boxplot</a>-like wrapper for
@@ -18,32 +21,44 @@ classdef Violin < handle
     %   52, no. 2, pp. 181-184, 1998.
     %
     % Violin Properties:
-    %    ViolinColor - Fill color of the violin area and data points.
-    %                  Defaults to the next default color cycle.
-    %    ViolinAlpha - Transparency of the ciolin area and data points.
-    %                  Defaults to 0.3.
-    %    EdgeColor   - Color of the violin area outline.
-    %                  Defaults to [0.5 0.5 0.5]
-    %    BoxColor    - Color of the box, whiskers, and the outlines of
-    %                  the median point and the notch indicators.
-    %                  Defaults to [0.5 0.5 0.5]
-    %    MedianColor - Fill color of the median and notch indicators.
-    %                  Defaults to [1 1 1]
-    %    ShowData    - Whether to show data points.
-    %                  Defaults to true
-    %    ShowNotches - Whether to show notch indicators.
-    %                  Defaults to false
-    %    ShowMean    - Whether to show mean indicator.
-    %                  Defaults to false
+    %    ViolinColor    - Fill color of the violin area and data points.
+    %                     Can be either a matrix nx3 or an array of up to two
+    %                     cells containing nx3 matrices.
+    %                     Defaults to the next default color cycle.
+    %    ViolinAlpha    - Transparency of the violin area and data points.
+    %                     Can be either a single scalar value or an array of
+    %                     up to two cells containing scalar values.
+    %                     Defaults to 0.3.
+    %    EdgeColor      - Color of the violin area outline.
+    %                     Defaults to [0.5 0.5 0.5]
+    %    BoxColor       - Color of the box, whiskers, and the outlines of
+    %                     the median point and the notch indicators.
+    %                     Defaults to [0.5 0.5 0.5]
+    %    MedianColor    - Fill color of the median and notch indicators.
+    %                     Defaults to [1 1 1]
+    %    ShowData       - Whether to show data points.
+    %                     Defaults to true
+    %    ShowNotches    - Whether to show notch indicators.
+    %                     Defaults to false
+    %    ShowMean       - Whether to show mean indicator.
+    %                     Defaults to false
+    %    ShowBox        - Whether to show the box.
+    %                     Defaults to true
+    %    ShowMedian     - Whether to show the median indicator.
+    %                     Defaults to true
+    %    ShowWhiskers   - Whether to show the whiskers
+    %                     Defaults to true
     %
     % Violin Children:
-    %    ScatterPlot - <a href="matlab:help('scatter')">scatter</a> plot of the data points
-    %    ViolinPlot  - <a href="matlab:help('fill')">fill</a> plot of the kernel density estimate
-    %    BoxPlot     - <a href="matlab:help('fill')">fill</a> plot of the box between the quartiles
-    %    WhiskerPlot - line <a href="matlab:help('plot')">plot</a> between the whisker ends
-    %    MedianPlot  - <a href="matlab:help('scatter')">scatter</a> plot of the median (one point)
-    %    NotchPlots  - <a href="matlab:help('scatter')">scatter</a> plots for the notch indicators
-    %    MeanPlot    - line <a href="matlab:help('plot')">plot</a> at mean value
+    %    ScatterPlot    - <a href="matlab:help('scatter')">scatter</a> plot of the data points
+    %    ScatterPlot2   - <a href="matlab:help('scatter')">scatter</a> second plot of the data points
+    %    ViolinPlot     - <a href="matlab:help('fill')">fill</a> plot of the kernel density estimate
+    %    ViolinPlot2    - <a href="matlab:help('fill')">fill</a> second plot of the kernel density estimate
+    %    BoxPlot        - <a href="matlab:help('fill')">fill</a> plot of the box between the quartiles
+    %    WhiskerPlot    - line <a href="matlab:help('plot')">plot</a> between the whisker ends
+    %    MedianPlot     - <a href="matlab:help('scatter')">scatter</a> plot of the median (one point)
+    %    NotchPlots     - <a href="matlab:help('scatter')">scatter</a> plots for the notch indicators
+    %    MeanPlot       - line <a href="matlab:help('plot')">plot</a> at mean value
 
     % Copyright (c) 2016, Bastian Bechtold
     % This code is released under the terms of the BSD 3-clause license
@@ -58,26 +73,23 @@ classdef Violin < handle
         MedianPlot      % scatter plot of the median (one point)
         NotchPlots      % scatter plots for the notch indicators
         MeanPlot        % line plot of the mean (horizontal line)
-        MeanDotPlot     
-        MeanDotPlot2
     end
 
     properties (Dependent=true)
-        ViolinColor % fill color of the violin area and data points
-        ViolinAlpha % transparency of the violin area and data points
-        MarkerSize
-        LineWidth
-        EdgeColor   % color of the violin area outline
-        BoxColor    % color of box, whiskers, and median/notch edges
-        BoxWidth    % width of box between the quartiles in axis space (default 10% of Violin plot width, 0.03)
-        MedianColor % fill color of median and notches
-        ShowData    % whether to show data points
-        ShowNotches % whether to show notch indicators
-        ShowMean    % whether to show mean indicator
-        ShowBox
-        ShowMedian
-        ShowMeanDot
-        ShowWhiskerPlot
+        ViolinColor     % fill color of the violin area and data points
+        ViolinAlpha     % transparency of the violin area and data points
+        MarkerSize      % marker size for the median dot
+        LineWidth       % linewidth of the median plot
+        EdgeColor       % color of the violin area outline
+        BoxColor        % color of box, whiskers, and median/notch edges
+        BoxWidth        % width of box between the quartiles in axis space (default 10% of Violin plot width, 0.03)
+        MedianColor     % fill color of median and notches
+        ShowData        % whether to show data points
+        ShowNotches     % whether to show notch indicators
+        ShowMean        % whether to show mean indicator
+        ShowBox         % whether to show the box
+        ShowMedian      % whether to show the median line
+        ShowWhiskers    % whether to show the whiskers
     end
 
     methods
@@ -93,11 +105,14 @@ classdef Violin < handle
             %     'Bandwidth'    Bandwidth of the kernel density
             %                    estimate. Should be between 10% and
             %                    40% of the data range.
-            %     'ViolinColor'  Fill color of the violin area and
-            %                    data points. Defaults to the next
-            %                    default color cycle.
-            %     'ViolinAlpha'  Transparency of the violin area and
-            %                    data points. Defaults to 0.3.
+            %     'ViolinColor'  Fill color of the violin area 
+            %                    and data points.Can be either a matrix
+            %                    nx3 or an array of up to two cells
+            %                    containing nx3 matrices.
+            %     'ViolinAlpha'  Transparency of the violin area and data
+            %                    points. Can be either a single scalar
+            %                    value or an array of up to two cells 
+            %                    containing scalar values. Defaults to 0.3.
             %     'EdgeColor'    Color of the violin area outline.
             %                    Defaults to [0.5 0.5 0.5]
             %     'BoxColor'     Color of the box, whiskers, and the
@@ -112,6 +127,12 @@ classdef Violin < handle
             %                    Defaults to false
             %     'ShowMean'     Whether to show mean indicator.
             %                    Defaults to false
+            %     'ShowBox'      Whether to show the box
+            %                    Defaults to true
+            %     'ShowMedian'   Whether to show the median line
+            %                    Defaults to true
+            %     'ShowWhiskers' Whether to show the whiskers
+            %                    Defaults to true
 
             args = obj.checkInputs(data, pos, varargin{:});
             
@@ -209,13 +230,6 @@ classdef Violin < handle
                                 [meanValue, meanValue]);
             obj.MeanPlot.LineWidth = 1;
             
-            obj.MeanDotPlot = scatter(pos, meanValue, args.MarkerSize, args.BoxColor, 'filled');
-            
-            if ~isempty(data2)
-                meanValue2 = mean(data2);
-                obj.MeanDotPlot2 = scatter(pos, meanValue2, args.MarkerSize, [0.2 0.2 0.2], 'filled');
-            end
-            
             %% plot the median, notch, and whiskers
             IQR = quartiles(3) - quartiles(1);
             lowhisker = quartiles(1) - 1.5*IQR;
@@ -246,8 +260,7 @@ classdef Violin < handle
             obj.ShowMean = args.ShowMean;
             obj.ShowBox = args.ShowBox;
             obj.ShowMedian = args.ShowMedian;
-            obj.ShowMeanDot = args.ShowMeanDot;
-            obj.ShowWhiskerPlot = args.ShowWhiskerPlot;
+            obj.ShowWhiskers = args.ShowWhiskers;
 
             if not(isempty(args.ViolinColor))
                 if size(args.ViolinColor{1},1) > 1
@@ -480,27 +493,7 @@ classdef Violin < handle
         end
         
         
-        function set.ShowMeanDot(obj, yesno)
-            if ~isempty(obj.MeanDotPlot)
-                if yesno
-                    obj.MeanDotPlot.Visible = 'on';
-                else
-                    obj.MeanDotPlot.Visible = 'off';
-                end
-                if ~isempty(obj.MeanDotPlot2)
-                    obj.MeanDotPlot2.Visible = obj.MeanDotPlot.Visible;
-                end
-            end
-        end
-
-        function yesno = get.ShowMeanDot(obj)
-            if ~isempty(obj.MeanDotPlot)
-                yesno = strcmp(obj.MeanDotPlot.Visible, 'on');
-            end
-        end
-        
-        
-        function set.ShowWhiskerPlot(obj, yesno)
+        function set.ShowWhiskers(obj, yesno)
             if ~isempty(obj.WhiskerPlot)
                 if yesno
                     obj.WhiskerPlot.Visible = 'on';
@@ -510,7 +503,7 @@ classdef Violin < handle
             end
         end
 
-        function yesno = get.ShowWhiskerPlot(obj)
+        function yesno = get.ShowWhiskers(obj)
             if ~isempty(obj.WhiskerPlot)
                 yesno = strcmp(obj.WhiskerPlot.Visible, 'on');
             end
@@ -528,7 +521,7 @@ classdef Violin < handle
             p.addParameter('Bandwidth', [], isscalarnumber);
             iscolor = @(x) (isnumeric(x) & size(x,2) == 3);
             p.addParameter('ViolinColor', [], @(x)iscolor(vertcat(x{:})));
-            p.addParameter('MarkerSize', 4, @isnumeric);
+            p.addParameter('MarkerSize', 36, @isnumeric);
             p.addParameter('LineWidth', 0.75, @isnumeric);
             p.addParameter('BoxColor', [0.5 0.5 0.5], iscolor);
             p.addParameter('BoxWidth', 0.01, isscalarnumber);
@@ -541,8 +534,7 @@ classdef Violin < handle
             p.addParameter('ShowMean', false, isscalarlogical);
             p.addParameter('ShowBox', true, isscalarlogical);
             p.addParameter('ShowMedian', true, isscalarlogical);
-            p.addParameter('ShowMeanDot', false, isscalarlogical);
-            p.addParameter('ShowWhiskerPlot', true, isscalarlogical);
+            p.addParameter('ShowWhiskers', true, isscalarlogical);
             p.parse(data, pos, varargin{:});
             results = p.Results;
         end
@@ -550,7 +542,6 @@ classdef Violin < handle
     
     methods (Static)
         function [density, value, width] = calcKernelDensity(data, bandwidth, width)
-            
             if isempty(data)
                 error('Empty input data');
             end
@@ -566,9 +557,8 @@ classdef Violin < handle
             if min(data) == max(data)
                 density = 1;
             end
-            
+
             width = width/max(density);
-            
         end
     end
 end
