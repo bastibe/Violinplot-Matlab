@@ -145,6 +145,11 @@ classdef Violin < handle
                 data = data{1};
             end
             
+            if isempty(args.ViolinColor)
+                C = colororder;
+                args.ViolinColor = {repmat(C,ceil(size(data,2)/length(C)),1)};
+            end
+            
             data = data(not(isnan(data)));
             data2 = data2(not(isnan(data2)));
             if numel(data) == 1
@@ -298,7 +303,7 @@ classdef Violin < handle
                         ViolinAlpha{2} = args.ViolinAlpha{2};
                     end
                 else
-                    ViolinAlpha{2} = ViolinAlpha{1};
+                    ViolinAlpha{2} = ViolinAlpha{1}/2;  % default unless specified
                 end
             else
                 % default
@@ -527,7 +532,7 @@ classdef Violin < handle
             p.addParameter('BoxWidth', 0.01, isscalarnumber);
             p.addParameter('EdgeColor', [0.5 0.5 0.5], iscolor);
             p.addParameter('MedianColor', [1 1 1], iscolor);
-            p.addParameter('ViolinAlpha', {0.3,0.3}, @(x)isnumeric(vertcat(x{:})));
+            p.addParameter('ViolinAlpha', {0.3,0.15}, @(x)isnumeric(vertcat(x{:})));
             isscalarlogical = @(x) (islogical(x) & isscalar(x));
             p.addParameter('ShowData', true, isscalarlogical);
             p.addParameter('ShowNotches', false, isscalarlogical);

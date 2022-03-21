@@ -135,18 +135,17 @@ if isa(data, 'dataset') || isstruct(data) || istable(data)
         violins(n) = Violin(thisData, n, varargin{:});
     end
     set(gca, 'XTick', 1:length(catnames), 'XTickLabels', catnames);
-    
+    set(gca,'Box','on');
+    return
 elseif iscell(data) && length(data(:))==2 % cell input
     if not(size(data{1},2)==size(data{2},2))
         error('The two input data matrices have to have the same number of columns');
     end
 elseif iscell(data) && length(data(:))>2 % cell input
     error('Up to two datasets can be compared');
-elseif isnumeric(data) % numeric input
-    
+elseif isnumeric(data) % numeric input   
     % 1D data, one category for each data point
-    if hascategories && numel(data) == numel(cats)
-        
+    if hascategories && numel(data) == numel(cats)    
         if isempty(grouporder)
             cats = categorical(cats);
         else
@@ -162,6 +161,8 @@ elseif isnumeric(data) % numeric input
             violins(n) = Violin({thisData}, n, varargin{:});
         end
         set(gca, 'XTick', 1:length(catnames), 'XTickLabels', catnames_labels);
+        set(gca,'Box','on');
+        return
     else
         data = {data};
     end
@@ -171,7 +172,6 @@ end
 if not(hascategories) && isvector(data{1})
     violins = Violin(data, 1, varargin{:});
     set(gca, 'XTick', 1);
-    
 % 2D data with or without categories
 elseif ismatrix(data{1})
     for n=1:size(data{1}, 2)
@@ -182,7 +182,6 @@ elseif ismatrix(data{1})
     if hascategories && length(cats) == size(data{1}, 2)
         set(gca, 'XTickLabels', cats);
     end
-    
 end
 
 set(gca,'Box','on');
