@@ -50,11 +50,11 @@ classdef Violin < handle
     %                     Defaults to true
     %    vHalf          - Whether to do a half violin(left, right side) or
     %                     full. Defaults to full.
-    %  plotQuartiles    - Option on how to display quartiles, with a
+    %    qStyles        - Option on how to display quartiles, with a
     %                     boxplot, shadow or none. Defaults to boxplot.
     %    scpltBool      - Turns on/off the scatter plot.
     %                     Defaults to True.
-    %    barPlotBool    - Turns on/off the side histogram/bar plot. Defaults
+    %    barpltBool     - Turns on/off the side histogram/bar plot. Defaults
     %                     to false (so bar plot is off)
     %
     %
@@ -146,13 +146,13 @@ classdef Violin < handle
             %                    Defaults to true
             %     'ShowWhiskers' Whether to show the whiskers
             %                    Defaults to true
-            %     'vHalf'   Whether to do a half violin(left, right side) or
+            %     'vHalf'        Whether to do a half violin(left, right side) or
             %                    full. Defaults to full.
-            %     'qStyles' Option on how to display quartiles, with a
+            %     'qStyles'      Option on how to display quartiles, with a
             %                    boxplot or as a shadow. Defaults to boxplot.
             %     'scpltBool'    Turns on/off the scatter plot. Defaults to
             %                    True (so scatter plot is on)
-            %     'barPlotBool'  Turns on/off the side histogram/bar plot. Defaults to
+            %     'barpltBool'  Turns on/off the side histogram/bar plot. Defaults to
             %                    false (so bar plot is off)
             
             st = dbstack; % get the calling function for reporting errors
