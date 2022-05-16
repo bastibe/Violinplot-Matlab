@@ -72,14 +72,6 @@ ylabel('Fuel Economy in MPG ');
 xlim([0, 8]); 
 disp('Test 7 passed ok');
 
-% TEST CASE 8
-disp('Test 8: Test plotting only left side scatter.');
-subplot(2,4,8); 
-vs5 = violinplot(MPG, Origin, 'qStyles','shadow', 'vHalf','left',...
-     'scpltBool', false,'barpltBool', true, 'ShowMean', true);
-ylabel('Fuel Economy in MPG ');
-xlim([0, 8]); 
-disp('Test 8 passed ok');
 
 
 %other test cases could be added here
