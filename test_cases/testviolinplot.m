@@ -44,22 +44,33 @@ plotdetails(4);
 % TEST CASE 5
 disp('Test 5: Test shadow for quartiles.');
 subplot(2,4,5); 
-vs5 = violinplot(MPG, Origin, 'qStyles','shadow');
+vs5 = violinplot(MPG, Origin, 'QuartileStyle','shadow');
 plotdetails(5);
 
 % TEST CASE 6
-disp('Test 6: Test plotting only right side & bar plot, disable scatter.');
+disp('Test 6: Test plotting only right side & histogram plot, with quartiles as boxplot.');
 subplot(2,4,6); 
-vs5 = violinplot(MPG, Origin, 'qStyles','boxplot', 'vHalf','right',...
-    'scpltBool', false, 'barpltBool', true);
+vs5 = violinplot(MPG, Origin, 'QuartileStyle','boxplot', 'HalfViolin','right',...
+    'DataStyle', 'histogram');
 plotdetails(6);
 
 % TEST CASE 7
-disp('Test 7: Test plotting only left side & bar plot, and quartiles as boxplot.');
+disp('Test 7: Test plotting only left side & histogram plot, and quartiles as shadow.');
 subplot(2,4,7); 
-vs5 = violinplot(MPG, Origin, 'qStyles','shadow', 'vHalf','left',...
-     'scpltBool', false,'barpltBool', true, 'ShowMean', true);
+vs5 = violinplot(MPG, Origin, 'QuartileStyle','shadow', 'HalfViolin','left',...
+     'DataStyle', 'histogram', 'ShowMean', true);
 plotdetails(7);
+
+
+% TEST CASE 8
+disp('Test 8: Same as previous one, just removing the data of half of the violins afterwards.');
+subplot(2,4,8); 
+vs5 = violinplot(MPG, Origin, 'QuartileStyle','shadow', 'HalfViolin','left',...
+     'DataStyle', 'histogram', 'ShowMean', false);
+plotdetails(8);
+for n= 1:round(length(vs5)/2)
+    vs5(1,n).ShowData = 0;
+end
 %other test cases could be added here
 end 
 

@@ -48,14 +48,12 @@ classdef Violin < handle
     %                     Defaults to true
     %    ShowWhiskers   - Whether to show the whiskers
     %                     Defaults to true
-    %    vHalf          - Whether to do a half violin(left, right side) or
+    %    HalfViolin     - Whether to do a half violin(left, right side) or
     %                     full. Defaults to full.
-    %    qStyles        - Option on how to display quartiles, with a
+    %    QuartileStyle - Option on how to display quartiles, with a
     %                     boxplot, shadow or none. Defaults to boxplot.
-    %    scpltBool      - Turns on/off the scatter plot.
-    %                     Defaults to True.
-    %    barpltBool     - Turns on/off the side histogram/bar plot. Defaults
-    %                     to false (so bar plot is off)
+    %    DataStyle      - Defines the style to show the data points. Opts: 
+    %                     'scatter', 'histogram' or 'none'. Default is 'Scatter'.
     %
     %
     % Violin Children:
@@ -83,8 +81,8 @@ classdef Violin < handle
         MedianPlot      % scatter plot of the median (one point)
         NotchPlots      % scatter plots for the notch indicators
         MeanPlot        % line plot of the mean (horizontal line)
-        ViolinPlotQ % color diff the quartiles
-        BarPlot     % alternative to the scatter plot, histograms
+        HistogramPlot   % histogram of the data
+        ViolinPlotQ     % fill plot of the Quartiles as shadow
     end
     
     properties (Dependent=true)
@@ -102,7 +100,7 @@ classdef Violin < handle
         ShowBox         % whether to show the box
         ShowMedian      % whether to show the median line
         ShowWhiskers    % whether to show the whiskers
-        violinSide  % whether to do a half violin(left, right side) or full
+        HalfViolin      % whether to do a half violin(left, right side) or full
     end
     
     methods
@@ -146,14 +144,12 @@ classdef Violin < handle
             %                    Defaults to true
             %     'ShowWhiskers' Whether to show the whiskers
             %                    Defaults to true
-            %     'vHalf'        Whether to do a half violin(left, right side) or
+            %     'HalfViolin'   Whether to do a half violin(left, right side) or
             %                    full. Defaults to full.
-            %     'qStyles'      Option on how to display quartiles, with a
+            %   'QuartileStyle'  Option on how to display quartiles, with a
             %                    boxplot or as a shadow. Defaults to boxplot.
-            %     'scpltBool'    Turns on/off the scatter plot. Defaults to
-            %                    True (so scatter plot is on)
-            %     'barpltBool'  Turns on/off the side histogram/bar plot. Defaults to
-            %                    false (so bar plot is off)
+            %     'DataStyle'    Defines the style to show the data points. Opts:
+            %                   'scatter', 'histogram' or 'none'. Default is 'Scatter'.
             
             st = dbstack; % get the calling function for reporting errors
             namefun = st.name;
@@ -205,7 +201,7 @@ classdef Violin < handle
             else
                 jitter = rand(size(data)); % only right side
             end
-            switch args.vHalf % this is more modular
+            switch args.HalfViolin % this is more modular
                 case 'left'
                     jitter = -1*(rand(size(data))); %left
                 case 'right'
@@ -214,45 +210,45 @@ classdef Violin < handle
                     jitter = 2*(rand(size(data))-0.5);
             end
             % Make scatter plot
-            if args.scpltBool
-                if ~isempty(data2)
-                    jitter = 1*(rand(size(data))); %right
-                    obj.ScatterPlot = ...
-                        scatter(pos + jitter.*jitterstrength, data, 'filled');
-                    % plot the data points within the violin area
-                    if length(densityC) > 1
-                        jitterstrength = interp1(valueC, densityC*widthC, data2);
-                    else % all data is identical:
-                        jitterstrength = densityC*widthC;
-                    end
-                    jitter = -1*rand(size(data2));% left
-                    obj.ScatterPlot2 = ...
-                        scatter(pos + jitter.*jitterstrength, data2, 'filled');
-                else 
-                    obj.ScatterPlot = ...
-                        scatter(pos + jitter.*jitterstrength, data, 'filled');
+            switch args.DataStyle
+                case 'scatter'
+                    if ~isempty(data2)
+                        jitter = 1*(rand(size(data))); %right
+                        obj.ScatterPlot = ...
+                            scatter(pos + jitter.*jitterstrength, data, 'filled');
+                        % plot the data points within the violin area
+                        if length(densityC) > 1
+                            jitterstrength = interp1(valueC, densityC*widthC, data2);
+                        else % all data is identical:
+                            jitterstrength = densityC*widthC;
+                        end
+                        jitter = -1*rand(size(data2));% left
+                        obj.ScatterPlot2 = ...
+                            scatter(pos + jitter.*jitterstrength, data2, 'filled');
+                    else 
+                        obj.ScatterPlot = ...
+                            scatter(pos + jitter.*jitterstrength, data, 'filled');
 
-                end
-            end
-                % Make histogram plot
-            if args.barpltBool
-                [counts,edges] = histcounts(data, size(unique(data),1));
-                switch args.vHalf
-                    case 'right'
-                        obj.BarPlot= plot([pos-((counts')/max(counts))*max(jitterstrength)*2, pos*ones(size(counts,2),1)]',...
-                            [edges(1:end-1)+max(diff(edges))/2; edges(1:end-1)+max(diff(edges))/2],'-','LineWidth',1, 'Color', 'k');
-                    case 'left'
-                        obj.BarPlot= plot([pos*ones(size(counts,2),1), pos+((counts')/max(counts))*max(jitterstrength)*2]',...
-                            [edges(1:end-1)+max(diff(edges))/2; edges(1:end-1)+max(diff(edges))/2],'-','LineWidth',1, 'Color', 'k');
-                    otherwise
-                        fprintf([namefun, ' No histogram/bar plot option available for full violins, as it would look overcrowded.\n'])
-                end
+                    end
+                case 'histogram'
+                    [counts,edges] = histcounts(data, size(unique(data),1));
+                    switch args.HalfViolin
+                        case 'right'
+                            obj.HistogramPlot= plot([pos-((counts')/max(counts))*max(jitterstrength)*2, pos*ones(size(counts,2),1)]',...
+                                [edges(1:end-1)+max(diff(edges))/2; edges(1:end-1)+max(diff(edges))/2],'-','LineWidth',1, 'Color', 'k');
+                        case 'left'
+                            obj.HistogramPlot= plot([pos*ones(size(counts,2),1), pos+((counts')/max(counts))*max(jitterstrength)*2]',...
+                                [edges(1:end-1)+max(diff(edges))/2; edges(1:end-1)+max(diff(edges))/2],'-','LineWidth',1, 'Color', 'k');
+                        otherwise
+                            fprintf([namefun, ' No histogram/bar plot option available for full violins, as it would look overcrowded.\n'])
+                    end
+                case 'none'
             end
                 
             %% Plot the violin
             halfViol= ones(1, size(density,2));
             if isempty(data2) % if no comparison data
-                switch args.vHalf
+                switch args.HalfViolin
                     case 'right'
                         obj.ViolinPlot =  ... % plot color will be overwritten later
                             fill([pos+density*width halfViol*pos], ...
@@ -280,9 +276,9 @@ classdef Violin < handle
             %% Plot the quartiles within the violin
             quartiles = quantile(data, [0.25, 0.5, 0.75]);
             flat= [halfViol*pos halfViol*pos];
-            switch args.qStyles
+            switch args.QuartileStyle
                 case 'shadow'
-                    switch args.vHalf
+                    switch args.HalfViolin
                         case 'right'
                             w = [pos+density*width halfViol*pos];
                             h= [value value(end:-1:1)];
@@ -316,7 +312,7 @@ classdef Violin < handle
             if meanDensityWidth<args.BoxWidth/2
                 meanDensityWidth=args.BoxWidth/2;
             end
-            switch args.vHalf
+            switch args.HalfViolin
                 case 'right'
                     obj.MeanPlot = plot(pos+[0,1].*meanDensityWidth, ...
                         [meanValue, meanValue]);
@@ -491,8 +487,8 @@ classdef Violin < handle
             if  ~isempty(obj.ViolinPlotQ)
                 obj.ViolinPlotQ.FaceColor = color{1};
             end
-            for idx = 1: size(obj.BarPlot,1)
-                obj.BarPlot(idx).Color = color{1};
+            for idx = 1: size(obj.HistogramPlot,1)
+                obj.HistogramPlot(idx).Color = color{1};
             end
         end
                 
@@ -525,8 +521,14 @@ classdef Violin < handle
         function set.ShowData(obj, yesno)
             if yesno
                 obj.ScatterPlot.Visible = 'on';
+                for idx = 1: size(obj.HistogramPlot,1)
+                    obj.HistogramPlot(idx).Visible = 'on';
+                end
             else
                 obj.ScatterPlot.Visible = 'off';
+                for idx = 1: size(obj.HistogramPlot,1)
+                    obj.HistogramPlot(idx).Visible = 'off';
+                end
             end
             if ~isempty(obj.ScatterPlot2)
                 obj.ScatterPlot2.Visible = obj.ScatterPlot.Visible;
@@ -655,12 +657,13 @@ classdef Violin < handle
             p.addParameter('ShowWhiskers', true, isscalarlogical);
             validSides={'full', 'right', 'left'};
             checkSide = @(x) any(validatestring(x, validSides));
-            p.addParameter('vHalf', 'full', checkSide);
-            validQuartilesStyles={'boxplot', 'shadow', 'none'};
-            checkQuartile = @(x)any(validatestring(x, validQuartilesStyles));
-            p.addParameter('qStyles', 'boxplot', checkQuartile);
-            p.addParameter('scpltBool', true, isscalarlogical);
-            p.addParameter('barpltBool', false, isscalarlogical);
+            p.addParameter('HalfViolin', 'full', checkSide);
+            validQuartileStyles={'boxplot', 'shadow', 'none'};
+            checkQuartile = @(x)any(validatestring(x, validQuartileStyles));
+            p.addParameter('QuartileStyle', 'boxplot', checkQuartile);
+            validDataStyles = {'scatter', 'histogram', 'none'};
+            checkStyle = @(x)any(validatestring(x, validDataStyles));
+            p.addParameter('DataStyle', 'scatter', checkStyle);
             
             p.parse(data, pos, varargin{:});
             results = p.Results;
