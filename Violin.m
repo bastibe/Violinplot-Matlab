@@ -48,6 +48,13 @@ classdef Violin < handle
     %                     Defaults to true
     %    ShowWhiskers   - Whether to show the whiskers
     %                     Defaults to true
+    %    HalfViolin     - Whether to do a half violin(left, right side) or
+    %                     full. Defaults to full.
+    %    QuartileStyle - Option on how to display quartiles, with a
+    %                     boxplot, shadow or none. Defaults to boxplot.
+    %    DataStyle      - Defines the style to show the data points. Opts: 
+    %                     'scatter', 'histogram' or 'none'. Default is 'Scatter'.
+    %
     %
     % Violin Children:
     %    ScatterPlot    - <a href="matlab:help('scatter')">scatter</a> plot of the data points
@@ -59,10 +66,11 @@ classdef Violin < handle
     %    MedianPlot     - <a href="matlab:help('scatter')">scatter</a> plot of the median (one point)
     %    NotchPlots     - <a href="matlab:help('scatter')">scatter</a> plots for the notch indicators
     %    MeanPlot       - line <a href="matlab:help('plot')">plot</a> at mean value
-
+    
+    
     % Copyright (c) 2016, Bastian Bechtold
     % This code is released under the terms of the BSD 3-clause license
-
+    
     properties (Access=public)
         ScatterPlot     % scatter plot of the data points
         ScatterPlot2    % comparison scatter plot of the data points
@@ -73,8 +81,10 @@ classdef Violin < handle
         MedianPlot      % scatter plot of the median (one point)
         NotchPlots      % scatter plots for the notch indicators
         MeanPlot        % line plot of the mean (horizontal line)
+        HistogramPlot   % histogram of the data
+        ViolinPlotQ     % fill plot of the Quartiles as shadow
     end
-
+    
     properties (Dependent=true)
         ViolinColor     % fill color of the violin area and data points
         ViolinAlpha     % transparency of the violin area and data points
@@ -90,8 +100,9 @@ classdef Violin < handle
         ShowBox         % whether to show the box
         ShowMedian      % whether to show the median line
         ShowWhiskers    % whether to show the whiskers
+        HalfViolin      % whether to do a half violin(left, right side) or full
     end
-
+    
     methods
         function obj = Violin(data, pos, varargin)
             %Violin plots a violin plot of some data at pos
@@ -105,13 +116,13 @@ classdef Violin < handle
             %     'Bandwidth'    Bandwidth of the kernel density
             %                    estimate. Should be between 10% and
             %                    40% of the data range.
-            %     'ViolinColor'  Fill color of the violin area 
+            %     'ViolinColor'  Fill color of the violin area
             %                    and data points.Can be either a matrix
             %                    nx3 or an array of up to two cells
             %                    containing nx3 matrices.
             %     'ViolinAlpha'  Transparency of the violin area and data
             %                    points. Can be either a single scalar
-            %                    value or an array of up to two cells 
+            %                    value or an array of up to two cells
             %                    containing scalar values. Defaults to 0.3.
             %     'EdgeColor'    Color of the violin area outline.
             %                    Defaults to [0.5 0.5 0.5]
@@ -133,13 +144,21 @@ classdef Violin < handle
             %                    Defaults to true
             %     'ShowWhiskers' Whether to show the whiskers
             %                    Defaults to true
-
+            %     'HalfViolin'   Whether to do a half violin(left, right side) or
+            %                    full. Defaults to full.
+            %   'QuartileStyle'  Option on how to display quartiles, with a
+            %                    boxplot or as a shadow. Defaults to boxplot.
+            %     'DataStyle'    Defines the style to show the data points. Opts:
+            %                   'scatter', 'histogram' or 'none'. Default is 'Scatter'.
+            
+            st = dbstack; % get the calling function for reporting errors
+            namefun = st.name;
             args = obj.checkInputs(data, pos, varargin{:});
             
             if length(data)==1
                 data2 = [];
                 data = data{1};
- 
+                
             else
                 data2 = data{2};
                 data = data{1};
@@ -162,7 +181,7 @@ classdef Violin < handle
             hold('on');
             
 
-            %% calculate kernel density estimation for the violin
+            %% Calculate kernel density estimation for the violin
             [density, value, width] = obj.calcKernelDensity(data, args.Bandwidth, args.Width);
             
             % also calculate the kernel density of the comparison data if
@@ -171,7 +190,7 @@ classdef Violin < handle
                 [densityC, valueC, widthC] = obj.calcKernelDensity(data2, args.Bandwidth, args.Width);
             end
             
-            %% plot the data points within the violin area
+            %% Plot the data points within the violin area
             if length(density) > 1
                 jitterstrength = interp1(value, density*width, data);
             else % all data is identical:
@@ -182,27 +201,67 @@ classdef Violin < handle
             else
                 jitter = rand(size(data)); % only right side
             end
-            obj.ScatterPlot = ...
-                scatter(pos + jitter.*jitterstrength, data, 'filled');
-            
-            if ~isempty(data2)
-                % plot the data points within the violin area
-                if length(densityC) > 1
-                    jitterstrength = interp1(valueC, densityC*widthC, data2);
-                else % all data is identical:
-                    jitterstrength = densityC*widthC;
-                end
-                jitter = rand(size(data2))-1;
-                obj.ScatterPlot2 = ...
-                    scatter(pos + jitter.*jitterstrength, data2, 'filled');
+            switch args.HalfViolin % this is more modular
+                case 'left'
+                    jitter = -1*(rand(size(data))); %left
+                case 'right'
+                    jitter = 1*(rand(size(data))); %right
+                case 'full'
+                    jitter = 2*(rand(size(data))-0.5);
             end
-            
-            %% plot the violins
-            if isempty(data2)
-                % plot the violin on boths sides
-                obj.ViolinPlot =  ... % plot color will be overwritten later
-                    fill([pos+density*width pos-density(end:-1:1)*width], ...
-                    [value value(end:-1:1)], [1 1 1]);
+            % Make scatter plot
+            switch args.DataStyle
+                case 'scatter'
+                    if ~isempty(data2)
+                        jitter = 1*(rand(size(data))); %right
+                        obj.ScatterPlot = ...
+                            scatter(pos + jitter.*jitterstrength, data, 'filled');
+                        % plot the data points within the violin area
+                        if length(densityC) > 1
+                            jitterstrength = interp1(valueC, densityC*widthC, data2);
+                        else % all data is identical:
+                            jitterstrength = densityC*widthC;
+                        end
+                        jitter = -1*rand(size(data2));% left
+                        obj.ScatterPlot2 = ...
+                            scatter(pos + jitter.*jitterstrength, data2, 'filled');
+                    else 
+                        obj.ScatterPlot = ...
+                            scatter(pos + jitter.*jitterstrength, data, 'filled');
+
+                    end
+                case 'histogram'
+                    [counts,edges] = histcounts(data, size(unique(data),1));
+                    switch args.HalfViolin
+                        case 'right'
+                            obj.HistogramPlot= plot([pos-((counts')/max(counts))*max(jitterstrength)*2, pos*ones(size(counts,2),1)]',...
+                                [edges(1:end-1)+max(diff(edges))/2; edges(1:end-1)+max(diff(edges))/2],'-','LineWidth',1, 'Color', 'k');
+                        case 'left'
+                            obj.HistogramPlot= plot([pos*ones(size(counts,2),1), pos+((counts')/max(counts))*max(jitterstrength)*2]',...
+                                [edges(1:end-1)+max(diff(edges))/2; edges(1:end-1)+max(diff(edges))/2],'-','LineWidth',1, 'Color', 'k');
+                        otherwise
+                            fprintf([namefun, ' No histogram/bar plot option available for full violins, as it would look overcrowded.\n'])
+                    end
+                case 'none'
+            end
+                
+            %% Plot the violin
+            halfViol= ones(1, size(density,2));
+            if isempty(data2) % if no comparison data
+                switch args.HalfViolin
+                    case 'right'
+                        obj.ViolinPlot =  ... % plot color will be overwritten later
+                            fill([pos+density*width halfViol*pos], ...
+                            [value value(end:-1:1)], [1 1 1]);
+                    case 'left'
+                        obj.ViolinPlot =  ... % plot color will be overwritten later
+                            fill([halfViol*pos pos-density(end:-1:1)*width], ...
+                            [value value(end:-1:1)], [1 1 1]);
+                    case 'full'
+                        obj.ViolinPlot =  ... % plot color will be overwritten later
+                            fill([pos+density*width pos-density(end:-1:1)*width], ...
+                            [value value(end:-1:1)], [1 1 1]);
+                end
             else
                 % plot right half of the violin
                 obj.ViolinPlot =  ...
@@ -211,17 +270,39 @@ classdef Violin < handle
                 % plot left half of the violin
                 obj.ViolinPlot2 =  ...
                     fill([pos-densityC(end)*widthC pos-densityC(end:-1:1)*widthC], ...
-                    [valueC(end) valueC(end:-1:1)], [1 1 1]);        
+                    [valueC(end) valueC(end:-1:1)], [1 1 1]);
             end
-
-            %% plot the mini-boxplot within the violin
-            quartiles = quantile(data, [0.25, 0.5, 0.75]);         
-            obj.BoxPlot = ... % plot color will be overwritten later
-                fill(pos+[-1,1,1,-1]*args.BoxWidth, ...
-                     [quartiles(1) quartiles(1) quartiles(3) quartiles(3)], ...
-                     [1 1 1]);
-                 
-            %% plot the data mean
+                
+            %% Plot the quartiles within the violin
+            quartiles = quantile(data, [0.25, 0.5, 0.75]);
+            flat= [halfViol*pos halfViol*pos];
+            switch args.QuartileStyle
+                case 'shadow'
+                    switch args.HalfViolin
+                        case 'right'
+                            w = [pos+density*width halfViol*pos];
+                            h= [value value(end:-1:1)];
+                        case 'left'
+                            w = [halfViol*pos pos-density(end:-1:1)*width];
+                            h= [value value(end:-1:1)];
+                        case 'full'
+                            w = [pos+density*width pos-density(end:-1:1)*width];
+                            h= [value value(end:-1:1)];
+                    end
+                    w(h<quartiles(1))=flat(h<quartiles(1));
+                    w(h>quartiles(3))=flat((h>quartiles(3)));
+                    obj.ViolinPlotQ =  ... % plot color will be overwritten later
+                        fill(w, ...
+                        h, [1 1 1]);
+                case 'boxplot'
+                    obj.BoxPlot = ... % plot color will be overwritten later
+                        fill(pos+[-1,1,1,-1]*args.BoxWidth, ...
+                        [quartiles(1) quartiles(1) quartiles(3) quartiles(3)], ...
+                        [1 1 1]);
+                case 'none'
+            end
+                
+            %% Plot the data mean
             meanValue = mean(data);
             if length(density) > 1
                 meanDensityWidth = interp1(value, density, meanValue)*width;
@@ -231,11 +312,20 @@ classdef Violin < handle
             if meanDensityWidth<args.BoxWidth/2
                 meanDensityWidth=args.BoxWidth/2;
             end
-            obj.MeanPlot = plot(pos+[-1,1].*meanDensityWidth, ...
-                                [meanValue, meanValue]);
+            switch args.HalfViolin
+                case 'right'
+                    obj.MeanPlot = plot(pos+[0,1].*meanDensityWidth, ...
+                        [meanValue, meanValue]);
+                case 'left'
+                    obj.MeanPlot = plot(pos+[-1,0].*meanDensityWidth, ...
+                        [meanValue, meanValue]);
+                case 'full'
+                    obj.MeanPlot = plot(pos+[-1,1].*meanDensityWidth, ...
+                        [meanValue, meanValue]);
+            end
             obj.MeanPlot.LineWidth = 1;
-            
-            %% plot the median, notch, and whiskers
+                
+            %% Plot the median, notch, and whiskers
             IQR = quartiles(3) - quartiles(1);
             lowhisker = quartiles(1) - 1.5*IQR;
             lowhisker = max(lowhisker, min(data(data > lowhisker)));
@@ -244,17 +334,19 @@ classdef Violin < handle
             if ~isempty(lowhisker) && ~isempty(hiwhisker)
                 obj.WhiskerPlot = plot([pos pos], [lowhisker hiwhisker]);
             end
-            
+                
+            % Median
             obj.MedianPlot = scatter(pos, quartiles(2), args.MarkerSize, [1 1 1], 'filled');
-
+                
+            % Notches
             obj.NotchPlots = ...
-                 scatter(pos, quartiles(2)-1.57*IQR/sqrt(length(data)), ...
-                         [], [1 1 1], 'filled', '^');
+                scatter(pos, quartiles(2)-1.57*IQR/sqrt(length(data)), ...
+                [], [1 1 1], 'filled', '^');
             obj.NotchPlots(2) = ...
-                 scatter(pos, quartiles(2)+1.57*IQR/sqrt(length(data)), ...
-                         [], [1 1 1], 'filled', 'v');
-                     
-        %% set graphical preferences
+                scatter(pos, quartiles(2)+1.57*IQR/sqrt(length(data)), ...
+                [], [1 1 1], 'filled', 'v');
+                
+            %% Set graphical preferences
             obj.EdgeColor = args.EdgeColor;
             obj.MedianPlot.LineWidth = args.LineWidth;
             obj.BoxColor = args.BoxColor;
@@ -266,7 +358,7 @@ classdef Violin < handle
             obj.ShowBox = args.ShowBox;
             obj.ShowMedian = args.ShowMedian;
             obj.ShowWhiskers = args.ShowWhiskers;
-
+                
             if not(isempty(args.ViolinColor))
                 if size(args.ViolinColor{1},1) > 1
                     ViolinColor{1} = args.ViolinColor{1}(pos,:);
@@ -284,12 +376,16 @@ classdef Violin < handle
                 end
             else
                 % defaults
-                ViolinColor{1} = obj.ScatterPlot.CData;
+                if args.scpltBool
+                    ViolinColor{1} = obj.ScatterPlot.CData;
+                else
+                    ViolinColor{1} = [0 0 0];
+                end
                 ViolinColor{2} = [0 0 0];
             end
             obj.ViolinColor = ViolinColor;
-            
-            
+                
+                
             if not(isempty(args.ViolinAlpha))
                 if length(args.ViolinAlpha{1})>1
                     error('Only scalar values are accepted for the alpha color channel');
@@ -310,27 +406,28 @@ classdef Violin < handle
                 ViolinAlpha = {1,1};
             end
             obj.ViolinAlpha = ViolinAlpha;
-
+                
+                
+        end
             
-        end  
-        
         %% SET METHODS
         function set.EdgeColor(obj, color)
             if ~isempty(obj.ViolinPlot)
                 obj.ViolinPlot.EdgeColor = color;
+                obj.ViolinPlotQ.EdgeColor = color;
                 if ~isempty(obj.ViolinPlot2)
                     obj.ViolinPlot2.EdgeColor = color;
                 end
             end
         end
-
+            
         function color = get.EdgeColor(obj)
             if ~isempty(obj.ViolinPlot)
                 color = obj.ViolinPlot.EdgeColor;
             end
         end
-
-        
+            
+            
         function set.MedianColor(obj, color)
             obj.MedianPlot.MarkerFaceColor = color;
             if ~isempty(obj.NotchPlots)
@@ -338,12 +435,12 @@ classdef Violin < handle
                 obj.NotchPlots(2).MarkerFaceColor = color;
             end
         end
-
+            
         function color = get.MedianColor(obj)
             color = obj.MedianPlot.MarkerFaceColor;
         end
-        
-
+            
+            
         function set.BoxColor(obj, color)
             if ~isempty(obj.BoxPlot)
                 obj.BoxPlot.FaceColor = color;
@@ -352,47 +449,59 @@ classdef Violin < handle
                 obj.MedianPlot.MarkerEdgeColor = color;
                 obj.NotchPlots(1).MarkerFaceColor = color;
                 obj.NotchPlots(2).MarkerFaceColor = color;
+            elseif  ~isempty(obj.ViolinPlotQ)
+                obj.WhiskerPlot.Color = color;
+                obj.MedianPlot.MarkerEdgeColor = color;
+                obj.NotchPlots(1).MarkerFaceColor = color;
+                obj.NotchPlots(2).MarkerFaceColor = color;
             end
         end
-
+            
         function color = get.BoxColor(obj)
             if ~isempty(obj.BoxPlot)
                 color = obj.BoxPlot.FaceColor;
             end
         end
-        
-        
+            
+            
         function set.BoxWidth(obj,width)
             if ~isempty(obj.BoxPlot)
                 pos=mean(obj.BoxPlot.XData);
                 obj.BoxPlot.XData=pos+[-1,1,1,-1]*width;
             end
         end
-        
+            
         function width = get.BoxWidth(obj)
             width=max(obj.BoxPlot.XData)-min(obj.BoxPlot.XData);
         end
-        
-
+            
+            
         function set.ViolinColor(obj, color)
             obj.ViolinPlot.FaceColor = color{1};
             obj.ScatterPlot.MarkerFaceColor = color{1};
             obj.MeanPlot.Color = color{1};
             if ~isempty(obj.ViolinPlot2)
-            obj.ViolinPlot2.FaceColor = color{2};
-            obj.ScatterPlot2.MarkerFaceColor = color{2};
+                obj.ViolinPlot2.FaceColor = color{2};
+                obj.ScatterPlot2.MarkerFaceColor = color{2};
+            end
+            if  ~isempty(obj.ViolinPlotQ)
+                obj.ViolinPlotQ.FaceColor = color{1};
+            end
+            for idx = 1: size(obj.HistogramPlot,1)
+                obj.HistogramPlot(idx).Color = color{1};
             end
         end
-
+                
         function color = get.ViolinColor(obj)
             color{1} = obj.ViolinPlot.FaceColor;
             if ~isempty(obj.ViolinPlot2)
                 color{2} = obj.ViolinPlot2.FaceColor;
             end
         end
-        
-        
+                
+                
         function set.ViolinAlpha(obj, alpha)
+            obj.ViolinPlotQ.FaceAlpha = .8;
             obj.ViolinPlot.FaceAlpha = alpha{1};
             obj.ScatterPlot.MarkerFaceAlpha = alpha{1};
             if ~isempty(obj.ViolinPlot2)
@@ -400,34 +509,40 @@ classdef Violin < handle
                 obj.ScatterPlot2.MarkerFaceAlpha = alpha{2};
             end
         end
-
+                
         function alpha = get.ViolinAlpha(obj)
             alpha{1} = obj.ViolinPlot.FaceAlpha;
             if ~isempty(obj.ViolinPlot2)
                 alpha{2} = obj.ViolinPlot2.FaceAlpha;
             end
         end
-        
-
+                
+                
         function set.ShowData(obj, yesno)
             if yesno
                 obj.ScatterPlot.Visible = 'on';
+                for idx = 1: size(obj.HistogramPlot,1)
+                    obj.HistogramPlot(idx).Visible = 'on';
+                end
             else
                 obj.ScatterPlot.Visible = 'off';
+                for idx = 1: size(obj.HistogramPlot,1)
+                    obj.HistogramPlot(idx).Visible = 'off';
+                end
             end
             if ~isempty(obj.ScatterPlot2)
                 obj.ScatterPlot2.Visible = obj.ScatterPlot.Visible;
             end
-                
+            
         end
-
+                
         function yesno = get.ShowData(obj)
             if ~isempty(obj.ScatterPlot)
                 yesno = strcmp(obj.ScatterPlot.Visible, 'on');
             end
         end
-
-        
+                
+                
         function set.ShowNotches(obj, yesno)
             if ~isempty(obj.NotchPlots)
                 if yesno
@@ -439,14 +554,14 @@ classdef Violin < handle
                 end
             end
         end
-
+                
         function yesno = get.ShowNotches(obj)
             if ~isempty(obj.NotchPlots)
                 yesno = strcmp(obj.NotchPlots(1).Visible, 'on');
             end
         end
-
-        
+                
+                
         function set.ShowMean(obj, yesno)
             if ~isempty(obj.MeanPlot)
                 if yesno
@@ -456,14 +571,14 @@ classdef Violin < handle
                 end
             end
         end
-
+                
         function yesno = get.ShowMean(obj)
             if ~isempty(obj.BoxPlot)
                 yesno = strcmp(obj.BoxPlot.Visible, 'on');
             end
         end
-        
-        
+                
+                
         function set.ShowBox(obj, yesno)
             if ~isempty(obj.BoxPlot)
                 if yesno
@@ -473,14 +588,14 @@ classdef Violin < handle
                 end
             end
         end
-        
+                
         function yesno = get.ShowBox(obj)
             if ~isempty(obj.BoxPlot)
                 yesno = strcmp(obj.BoxPlot.Visible, 'on');
             end
         end
-        
-        
+                
+                
         function set.ShowMedian(obj, yesno)
             if ~isempty(obj.MedianPlot)
                 if yesno
@@ -490,14 +605,14 @@ classdef Violin < handle
                 end
             end
         end
-
+                
         function yesno = get.ShowMedian(obj)
             if ~isempty(obj.MedianPlot)
                 yesno = strcmp(obj.MedianPlot.Visible, 'on');
             end
         end
-        
-        
+                
+                
         function set.ShowWhiskers(obj, yesno)
             if ~isempty(obj.WhiskerPlot)
                 if yesno
@@ -507,15 +622,15 @@ classdef Violin < handle
                 end
             end
         end
-
+                
         function yesno = get.ShowWhiskers(obj)
             if ~isempty(obj.WhiskerPlot)
                 yesno = strcmp(obj.WhiskerPlot.Visible, 'on');
             end
         end
-        
+                
     end
-
+            
     methods (Access=private)
         function results = checkInputs(~, data, pos, varargin)
             isscalarnumber = @(x) (isnumeric(x) & isscalar(x));
@@ -540,11 +655,21 @@ classdef Violin < handle
             p.addParameter('ShowBox', true, isscalarlogical);
             p.addParameter('ShowMedian', true, isscalarlogical);
             p.addParameter('ShowWhiskers', true, isscalarlogical);
+            validSides={'full', 'right', 'left'};
+            checkSide = @(x) any(validatestring(x, validSides));
+            p.addParameter('HalfViolin', 'full', checkSide);
+            validQuartileStyles={'boxplot', 'shadow', 'none'};
+            checkQuartile = @(x)any(validatestring(x, validQuartileStyles));
+            p.addParameter('QuartileStyle', 'boxplot', checkQuartile);
+            validDataStyles = {'scatter', 'histogram', 'none'};
+            checkStyle = @(x)any(validatestring(x, validDataStyles));
+            p.addParameter('DataStyle', 'scatter', checkStyle);
+            
             p.parse(data, pos, varargin{:});
             results = p.Results;
         end
     end
-    
+        
     methods (Static)
         function [density, value, width] = calcKernelDensity(data, bandwidth, width)
             if isempty(data)
@@ -562,8 +687,9 @@ classdef Violin < handle
             if min(data) == max(data)
                 density = 1;
             end
-
+            
             width = width/max(density);
         end
     end
 end
+
