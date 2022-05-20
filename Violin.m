@@ -53,7 +53,7 @@ classdef Violin < handle
     %    QuartileStyle - Option on how to display quartiles, with a
     %                     boxplot, shadow or none. Defaults to boxplot.
     %    DataStyle      - Defines the style to show the data points. Opts: 
-    %                     'scatter', 'histogram' or 'none'. Default is 'Scatter'.
+    %                     'scatter', 'histogram' or 'none'. Default is 'scatter'.
     %
     %
     % Violin Children:

@@ -20,6 +20,8 @@ plot-density trace synergism](http://www.stat.cmu.edu/~rnugent/PCMI2016/papers/V
 by J. L. Hintze and R. D. Nelson in The American Statistician, vol.
 52, no. 2, pp. 181-184, 1998 (DOI: 10.2307/2685478).
 
+For a simple call:
+
 ```matlab
 load carbig MPG Origin
 Origin = cellstr(Origin);
@@ -29,7 +31,24 @@ ylabel('Fuel Economy in MPG');
 xlim([0.5, 7.5]);
 ```
 
-![example image](example.png)
+![example image](./example.png)
+
+
+You can also play around with the different options, and tune your violin plots to your liking.
+
+```matlab
+grouporder={'England','Sweden','Japan','Italy','Germany','France','USA'};
+vs = Violin({MPG(strcmp(Origin, grouporder{pos}))},...
+    position,...
+    'HalfViolin','right',...% left, full
+    'QuartileStyle','shadow',... % boxplot, none
+    'DataStyle', 'histogram',... % scatter, none
+    'ShowNotches', false,...
+    'ShowMean', false,...
+    'ShowMedian', true,...
+    'ViolinColor', color);
+```
+![example image2](example2.png)
 
 ## Citation
 
