@@ -20,6 +20,8 @@ plot-density trace synergism](http://www.stat.cmu.edu/~rnugent/PCMI2016/papers/V
 by J. L. Hintze and R. D. Nelson in The American Statistician, vol.
 52, no. 2, pp. 181-184, 1998 (DOI: 10.2307/2685478).
 
+For a simple call:
+
 ```matlab
 load carbig MPG Origin
 Origin = cellstr(Origin);
@@ -46,8 +48,7 @@ vs = Violin({MPG(strcmp(Origin, grouporder{pos}))},...
     'ShowMedian', true,...
     'ViolinColor', color);
 ```
-![example image](./example.svg)
-<img src="./example.svg">
+![example image2](example2.png)
 
 ## Citation
 
