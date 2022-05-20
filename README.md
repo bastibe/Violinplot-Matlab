@@ -29,7 +29,25 @@ ylabel('Fuel Economy in MPG');
 xlim([0.5, 7.5]);
 ```
 
-![example image](example.png)
+![example image](./example.png)
+
+
+You can also play around with the different options, and tune your violin plots to your liking.
+
+```matlab
+grouporder={'England','Sweden','Japan','Italy','Germany','France','USA'};
+vs = Violin({MPG(strcmp(Origin, grouporder{pos}))},...
+    position,...
+    'HalfViolin','right',...% left, full
+    'QuartileStyle','shadow',... % boxplot, none
+    'DataStyle', 'histogram',... % scatter, none
+    'ShowNotches', false,...
+    'ShowMean', false,...
+    'ShowMedian', true,...
+    'ViolinColor', color);
+```
+![example image](./example.svg)
+<img src="./example.svg">
 
 ## Citation
 
