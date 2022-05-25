@@ -166,6 +166,9 @@ classdef Violin < handle
             
             if isempty(args.ViolinColor)
                 C = colororder;
+                if pos > length(C)
+                    C = lines;
+                end
                 args.ViolinColor = {repmat(C,ceil(size(data,2)/length(C)),1)};
             end
             
