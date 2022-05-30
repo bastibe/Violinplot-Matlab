@@ -165,7 +165,13 @@ classdef Violin < handle
             end
             
             if isempty(args.ViolinColor)
-                C = colororder;
+                Release= strsplit(version('-release'), {'a','b'}); %Check release
+                if str2num(Release{1})> 2019 | strcmp(version('-release'), '2019b')  
+                     C = colororder;
+                else
+                     C = lines;
+                end
+                
                 if pos > length(C)
                     C = lines;
                 end
@@ -195,7 +201,15 @@ classdef Violin < handle
             
             %% Plot the data points within the violin area
             if length(density) > 1
-                jitterstrength = interp1(value, density*width, data);
+                try
+                    jitterstrength = interp1(value, density*width, data);
+                catch
+                    %   Error using matlab.internal.math.interp1
+                    %   Sample points must be unique and sorted in ascending order.
+                    %   Error in interp1 (line 188)
+                    %   VqLite = matlab.internal.math.interp1(X,V,method,method,Xqcol);
+                 jitterstrength = mean(density*width);
+                end
             else % all data is identical:
                 jitterstrength = density*width;
             end
@@ -227,10 +241,10 @@ classdef Violin < handle
                         end
                         jitter = -1*rand(size(data2));% left
                         obj.ScatterPlot2 = ...
-                            scatter(pos + jitter.*jitterstrength, data2, 'filled');
+                            scatter(pos + jitter.*jitterstrength, data2,  args.MarkerSize,'filled');         
                     else 
                         obj.ScatterPlot = ...
-                            scatter(pos + jitter.*jitterstrength, data, 'filled');
+                            scatter(pos + jitter.*jitterstrength, data, args.MarkerSize, 'filled');
 
                     end
                 case 'histogram'
@@ -308,7 +322,16 @@ classdef Violin < handle
             %% Plot the data mean
             meanValue = mean(data);
             if length(density) > 1
-                meanDensityWidth = interp1(value, density, meanValue)*width;
+                try
+                    meanDensityWidth = interp1(value, density, meanValue)*width;
+                catch 
+                    % TODO:
+                    %   Error using matlab.internal.math.interp1
+                    %   Sample points must be unique and sorted in ascending order.
+                    %   Error in interp1 (line 188)
+                    %   VqLite = matlab.internal.math.interp1(X,V,method,method,Xqcol);
+                    meanDensityWidth  = mean(density*width);
+                end
             else % all data is identical:
                 meanDensityWidth = density*width;
             end
@@ -504,9 +527,9 @@ classdef Violin < handle
                 
                 
         function set.ViolinAlpha(obj, alpha)
-            obj.ViolinPlotQ.FaceAlpha = .8;
+            obj.ViolinPlotQ.FaceAlpha = .65; % reverse to .8?
             obj.ViolinPlot.FaceAlpha = alpha{1};
-            obj.ScatterPlot.MarkerFaceAlpha = alpha{1};
+            obj.ScatterPlot.MarkerFaceAlpha = 1;% reverse to alpha{1}? This increases visibility
             if ~isempty(obj.ViolinPlot2)
                 obj.ViolinPlot2.FaceAlpha = alpha{2};
                 obj.ScatterPlot2.MarkerFaceAlpha = alpha{2};
