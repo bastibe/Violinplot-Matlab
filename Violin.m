@@ -166,7 +166,7 @@ classdef Violin < handle
             
             if isempty(args.ViolinColor)
                 Release= strsplit(version('-release'), {'a','b'}); %Check release
-                if str2num(Release{1})> 2019 | strcmp(version('-release'), '2019b')  
+                if str2num(Release{1})> 2019 || strcmp(version('-release'), '2019b')  
                      C = colororder;
                 else
                      C = lines;
@@ -201,15 +201,7 @@ classdef Violin < handle
             
             %% Plot the data points within the violin area
             if length(density) > 1
-                try
-                    jitterstrength = interp1(value, density*width, data);
-                catch
-                    %   Error using matlab.internal.math.interp1
-                    %   Sample points must be unique and sorted in ascending order.
-                    %   Error in interp1 (line 188)
-                    %   VqLite = matlab.internal.math.interp1(X,V,method,method,Xqcol);
-                 jitterstrength = mean(density*width);
-                end
+               jitterstrength = interp1(unique(value), unique(density*width), data);
             else % all data is identical:
                 jitterstrength = density*width;
             end
@@ -322,16 +314,7 @@ classdef Violin < handle
             %% Plot the data mean
             meanValue = mean(data);
             if length(density) > 1
-                try
-                    meanDensityWidth = interp1(value, density, meanValue)*width;
-                catch 
-                    % TODO:
-                    %   Error using matlab.internal.math.interp1
-                    %   Sample points must be unique and sorted in ascending order.
-                    %   Error in interp1 (line 188)
-                    %   VqLite = matlab.internal.math.interp1(X,V,method,method,Xqcol);
-                    meanDensityWidth  = mean(density*width);
-                end
+                meanDensityWidth = interp1(unique(value), unique(density), meanValue)*width;
             else % all data is identical:
                 meanDensityWidth = density*width;
             end
@@ -527,9 +510,9 @@ classdef Violin < handle
                 
                 
         function set.ViolinAlpha(obj, alpha)
-            obj.ViolinPlotQ.FaceAlpha = .65; % reverse to .8?
+            obj.ViolinPlotQ.FaceAlpha = .65;
             obj.ViolinPlot.FaceAlpha = alpha{1};
-            obj.ScatterPlot.MarkerFaceAlpha = 1;% reverse to alpha{1}? This increases visibility
+            obj.ScatterPlot.MarkerFaceAlpha = 1;
             if ~isempty(obj.ViolinPlot2)
                 obj.ViolinPlot2.FaceAlpha = alpha{2};
                 obj.ScatterPlot2.MarkerFaceAlpha = alpha{2};
