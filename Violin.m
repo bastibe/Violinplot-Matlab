@@ -201,7 +201,7 @@ classdef Violin < handle
             
             %% Plot the data points within the violin area
             if length(density) > 1
-               jitterstrength = interp1(unique(value), unique(density*width), data);
+               jitterstrength = interp1(value, density*width, data, 'linear','extrap');
             else % all data is identical:
                 jitterstrength = density*width;
             end
@@ -314,7 +314,7 @@ classdef Violin < handle
             %% Plot the data mean
             meanValue = mean(data);
             if length(density) > 1
-                meanDensityWidth = interp1(unique(value), unique(density), meanValue)*width;
+                meanDensityWidth = interp1(value, density, meanValue,'linear','extrap')*width;
             else % all data is identical:
                 meanDensityWidth = density*width;
             end
@@ -695,6 +695,7 @@ classdef Violin < handle
             % all data is identical
             if min(data) == max(data)
                 density = 1;
+                value= mean(value);
             end
             
             width = width/max(density);
