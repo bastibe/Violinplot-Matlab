@@ -132,7 +132,7 @@ if isa(data, 'dataset') || isstruct(data) || istable(data)
     
     for n=1:length(catnames)
         thisData = data.(catnames{n});
-        violins(n) = Violin(thisData, n, varargin{:});
+        violins(n) = Violin({thisData}, n, varargin{:});
     end
     set(gca, 'XTick', 1:length(catnames), 'XTickLabels', catnames);
     set(gca,'Box','on');
