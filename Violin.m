@@ -225,7 +225,7 @@ classdef Violin < handle
                     if ~isempty(data2)
                         jitter = 1*(rand(size(data))); %right
                         obj.ScatterPlot = ...
-                            scatter(pos + jitter.*jitterstrength, data, 'filled');
+                            scatter(pos + jitter.*jitterstrength, data, args.MarkerSize, 'filled');
                         % plot the data points within the violin area
                         if length(densityC) > 1
                             jitterstrength = interp1(valueC, densityC*widthC, data2);
@@ -234,7 +234,7 @@ classdef Violin < handle
                         end
                         jitter = -1*rand(size(data2));% left
                         obj.ScatterPlot2 = ...
-                            scatter(pos + jitter.*jitterstrength, data2,  args.MarkerSize,'filled');         
+                            scatter(pos + jitter.*jitterstrength, data2, args.MarkerSize, 'filled');         
                     else 
                         obj.ScatterPlot = ...
                             scatter(pos + jitter.*jitterstrength, data, args.MarkerSize, 'filled');
@@ -517,7 +517,7 @@ classdef Violin < handle
             obj.ScatterPlot.MarkerFaceAlpha = 1;
             if ~isempty(obj.ViolinPlot2)
                 obj.ViolinPlot2.FaceAlpha = alpha{2};
-                obj.ScatterPlot2.MarkerFaceAlpha = alpha{2};
+                obj.ScatterPlot2.MarkerFaceAlpha = 1;
             end
         end
                 
