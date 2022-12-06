@@ -38,7 +38,7 @@ plotdetails(3);
 disp('Test 4: Test two sided violin plots. Japan is being compared.');
 subplot(2,4,4); 
 C = colororder;
-vs4 = violinplot({thisData,repmat(thisData(:,5),1,7)},catnames_labels,'ViolinColor',{C,C(5,:)},'ViolinAlpha',{0.3 0.3}, 'ShowMean', true);
+vs4 = violinplot({thisData,repmat(thisData(:,5),1,7)},catnames_labels,'ViolinColor',{C,C(5,:)},'ViolinAlpha',{0.3 0.3}, 'ShowMean', true, 'MarkerSize',8);
 plotdetails(4);
 
 % TEST CASE 5

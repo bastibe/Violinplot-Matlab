@@ -86,21 +86,22 @@ classdef Violin < handle
     end
     
     properties (Dependent=true)
-        ViolinColor     % fill color of the violin area and data points
-        ViolinAlpha     % transparency of the violin area and data points
-        MarkerSize      % marker size for the median dot
-        LineWidth       % linewidth of the median plot
-        EdgeColor       % color of the violin area outline
-        BoxColor        % color of box, whiskers, and median/notch edges
-        BoxWidth        % width of box between the quartiles in axis space (default 10% of Violin plot width, 0.03)
-        MedianColor     % fill color of median and notches
-        ShowData        % whether to show data points
-        ShowNotches     % whether to show notch indicators
-        ShowMean        % whether to show mean indicator
-        ShowBox         % whether to show the box
-        ShowMedian      % whether to show the median line
-        ShowWhiskers    % whether to show the whiskers
-        HalfViolin      % whether to do a half violin(left, right side) or full
+        ViolinColor         % fill color of the violin area and data points
+        ViolinAlpha         % transparency of the violin area and data points
+        MarkerSize          % marker size for the data dots
+        MedianMarkerSize    % marker size for the median dot
+        LineWidth           % linewidth of the median plot
+        EdgeColor           % color of the violin area outline
+        BoxColor            % color of box, whiskers, and median/notch edges
+        BoxWidth            % width of box between the quartiles in axis space (default 10% of Violin plot width, 0.03)
+        MedianColor         % fill color of median and notches
+        ShowData            % whether to show data points
+        ShowNotches         % whether to show notch indicators
+        ShowMean            % whether to show mean indicator
+        ShowBox             % whether to show the box
+        ShowMedian          % whether to show the median line
+        ShowWhiskers        % whether to show the whiskers
+        HalfViolin          % whether to do a half violin(left, right side) or full
     end
     
     methods
@@ -124,6 +125,10 @@ classdef Violin < handle
             %                    points. Can be either a single scalar
             %                    value or an array of up to two cells
             %                    containing scalar values. Defaults to 0.3.
+            %     'MarkerSize'   Size of the data points, if shown.
+            %                    Defaults to 24
+            % 'MedianMarkerSize' Size of the median indicator, if shown.
+            %                    Defaults to 36
             %     'EdgeColor'    Color of the violin area outline.
             %                    Defaults to [0.5 0.5 0.5]
             %     'BoxColor'     Color of the box, whiskers, and the
@@ -347,7 +352,7 @@ classdef Violin < handle
             end
                 
             % Median
-            obj.MedianPlot = scatter(pos, quartiles(2), args.MarkerSize, [1 1 1], 'filled');
+            obj.MedianPlot = scatter(pos, quartiles(2), args.MedianMarkerSize, [1 1 1], 'filled');
                 
             % Notches
             obj.NotchPlots = ...
@@ -652,7 +657,8 @@ classdef Violin < handle
             p.addParameter('Bandwidth', [], isscalarnumber);
             iscolor = @(x) (isnumeric(x) & size(x,2) == 3);
             p.addParameter('ViolinColor', [], @(x)iscolor(vertcat(x{:})));
-            p.addParameter('MarkerSize', 36, @isnumeric);
+            p.addParameter('MarkerSize', 24, @isnumeric);
+            p.addParameter('MedianMarkerSize', 36, @isnumeric);
             p.addParameter('LineWidth', 0.75, @isnumeric);
             p.addParameter('BoxColor', [0.5 0.5 0.5], iscolor);
             p.addParameter('BoxWidth', 0.01, isscalarnumber);
