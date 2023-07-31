@@ -304,11 +304,10 @@ classdef Violin < handle
                             w = [pos+density*width pos-density(end:-1:1)*width];
                             h= [value value(end:-1:1)];
                     end
-                    w(h<quartiles(1))=flat(h<quartiles(1));
-                    w(h>quartiles(3))=flat((h>quartiles(3)));
+                    indices = h >= quartiles(1) & h <= quartiles(3);
                     obj.ViolinPlotQ =  ... % plot color will be overwritten later
-                        fill(w, ...
-                        h, [1 1 1]);
+                        fill(w(indices), ...
+                        h(indices), [1 1 1]);
                 case 'boxplot'
                     obj.BoxPlot = ... % plot color will be overwritten later
                         fill(pos+[-1,1,1,-1]*args.BoxWidth, ...
