@@ -84,5 +84,9 @@ vs = Violin({MPG(strcmp(Origin,'USA'))},7,...
 % set correct labels
 set(gca,xticklabels=grouporder)
 
+ylabel('Fuel Economy in MPG');
+xlim([0.5, 7.5]);
+set(gca,"XTickLabelRotation",30)
+
 % save results
 exportgraphics(gcf,"example2.png")
