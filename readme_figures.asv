@@ -1,0 +1,28 @@
+clearvars
+close all
+clc
+
+load carbig MPG Origin
+Origin = cellstr(Origin);
+figure
+vs = violinplot(MPG, Origin);
+ylabel('Fuel Economy in MPG');
+xlim([0.5, 7.5]);
+
+exportgraphics(gcf,"example.png")
+
+%% 
+close all
+%%
+
+grouporder={'England','Sweden','Japan','Italy','Germany','France','USA'};
+
+vs = Violin({MPG(strcmp(Origin, grouporder{pos}))},...
+    pos,...
+    'HalfViolin','right',...% left, full
+    'QuartileStyle','shadow',... % boxplot, none
+    'DataStyle', 'histogram',... % scatter, none
+    'ShowNotches', false,...
+    'ShowMean', false,...
+    'ShowMedian', true);%,...
+%     'ViolinColor', color);
