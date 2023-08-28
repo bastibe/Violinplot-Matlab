@@ -11,6 +11,8 @@ vs = violinplot(MPG, Origin);
 ylabel('Fuel Economy in MPG');
 xlim([0.5, 7.5]);
 
+set(gcf,"Units","pixels","Position",[100 100 560 420])
+
 % save results
 exportgraphics(gcf,"example.png")
 
@@ -87,6 +89,8 @@ set(gca,xticklabels=grouporder)
 ylabel('Fuel Economy in MPG');
 xlim([0.5, 7.5]);
 set(gca,"XTickLabelRotation",30)
+
+set(gcf,"Units","pixels","Position",[200 200 560 420])
 
 % save results
 exportgraphics(gcf,"example2.png")
