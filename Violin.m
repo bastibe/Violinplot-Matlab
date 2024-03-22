@@ -422,7 +422,8 @@ classdef Violin < handle
             end
             obj.ViolinAlpha = ViolinAlpha;
                 
-                
+            set(obj.ViolinPlot, "Marker", "none");
+            set(obj.ViolinPlot2, "Marker", "none");
         end
             
         %% SET METHODS
