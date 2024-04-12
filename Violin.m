@@ -267,25 +267,25 @@ classdef Violin < handle
                     case 'right'
                         obj.ViolinPlot =  ... % plot color will be overwritten later
                             fill([pos+density*width halfViol*pos], ...
-                            [value value(end:-1:1)], [1 1 1]);
+                            [value value(end:-1:1)], [1 1 1],'LineStyle','-');
                     case 'left'
                         obj.ViolinPlot =  ... % plot color will be overwritten later
                             fill([halfViol*pos pos-density(end:-1:1)*width], ...
-                            [value value(end:-1:1)], [1 1 1]);
+                            [value value(end:-1:1)], [1 1 1],'LineStyle','-');
                     case 'full'
                         obj.ViolinPlot =  ... % plot color will be overwritten later
                             fill([pos+density*width pos-density(end:-1:1)*width], ...
-                            [value value(end:-1:1)], [1 1 1]);
+                            [value value(end:-1:1)], [1 1 1],'LineStyle','-');
                 end
             else
                 % plot right half of the violin
                 obj.ViolinPlot =  ...
                     fill([pos+density*width pos-density(1)*width], ...
-                    [value value(1)], [1 1 1]);
+                    [value value(1)], [1 1 1],'LineStyle','-');
                 % plot left half of the violin
                 obj.ViolinPlot2 =  ...
                     fill([pos-densityC(end)*widthC pos-densityC(end:-1:1)*widthC], ...
-                    [valueC(end) valueC(end:-1:1)], [1 1 1]);
+                    [valueC(end) valueC(end:-1:1)], [1 1 1],'LineStyle','-');
             end
                 
             %% Plot the quartiles within the violin
@@ -307,12 +307,12 @@ classdef Violin < handle
                     indices = h >= quartiles(1) & h <= quartiles(3);
                     obj.ViolinPlotQ =  ... % plot color will be overwritten later
                         fill(w(indices), ...
-                        h(indices), [1 1 1]);
+                        h(indices),'Marker','none', [1 1 1],'LineStyle','-');
                 case 'boxplot'
                     obj.BoxPlot = ... % plot color will be overwritten later
                         fill(pos+[-1,1,1,-1]*args.BoxWidth, ...
                         [quartiles(1) quartiles(1) quartiles(3) quartiles(3)], ...
-                        [1 1 1]);
+                        [1 1 1],'Marker','none','LineStyle','-');
                 case 'none'
             end
                 
@@ -330,13 +330,13 @@ classdef Violin < handle
             switch args.HalfViolin
                 case 'right'
                     obj.MeanPlot = plot(pos+[0,1].*meanDensityWidth, ...
-                        [meanValue, meanValue]);
+                        [meanValue, meanValue],'LineStyle','-');
                 case 'left'
                     obj.MeanPlot = plot(pos+[-1,0].*meanDensityWidth, ...
-                        [meanValue, meanValue]);
+                        [meanValue, meanValue],'LineStyle','-');
                 case 'full'
                     obj.MeanPlot = plot(pos+[-1,1].*meanDensityWidth, ...
-                        [meanValue, meanValue]);
+                        [meanValue, meanValue],'LineStyle','-');
             end
             obj.MeanPlot.LineWidth = 1;
                 
@@ -347,7 +347,8 @@ classdef Violin < handle
             hiwhisker = quartiles(3) + 1.5*IQR;
             hiwhisker = min(hiwhisker, max(data(data < hiwhisker)));
             if ~isempty(lowhisker) && ~isempty(hiwhisker)
-                obj.WhiskerPlot = plot([pos pos], [lowhisker hiwhisker]);
+                obj.WhiskerPlot = plot([pos pos], [lowhisker hiwhisker],...
+                    'Marker','none','LineStyle','-');
             end
                 
             % Median
@@ -422,8 +423,8 @@ classdef Violin < handle
             end
             obj.ViolinAlpha = ViolinAlpha;
                 
-            set(obj.ViolinPlot, "Marker", "none");
-            set(obj.ViolinPlot2, "Marker", "none");
+            set(obj.ViolinPlot, "Marker", "none", "LineStyle","-");
+            set(obj.ViolinPlot2, "Marker", "none", "LineStyle","-");
         end
             
         %% SET METHODS
