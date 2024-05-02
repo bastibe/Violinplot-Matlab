@@ -423,8 +423,8 @@ classdef Violin < handle
             end
             obj.ViolinAlpha = ViolinAlpha;
                 
-            set(obj.ViolinPlot, "Marker", "none", "LineStyle","-");
-            set(obj.ViolinPlot2, "Marker", "none", "LineStyle","-");
+            set(obj.ViolinPlot, 'Marker', 'none', 'LineStyle', '-');
+            set(obj.ViolinPlot2, 'Marker', 'none', 'LineStyle', '-');
         end
             
         %% SET METHODS
