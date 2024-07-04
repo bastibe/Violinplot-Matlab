@@ -87,7 +87,7 @@ classdef Violin < handle
         ViolinPlotQ     % fill plot of the Quartiles as shadow
     end
 
-    properties (Hidden = true)
+    properties (SetAccess=protected, GetAccess=public)
         Orientation     % 'horizontal' or 'vertical'
     end
     
@@ -193,7 +193,7 @@ classdef Violin < handle
             data = data(not(isnan(data)));
             data2 = data2(not(isnan(data2)));
             if numel(data) == 1
-                [x,y] = obj.plotOrientation(pos, data);
+                [x,y] = obj.setAxisOrientation(pos, data);
                 obj.MedianPlot = scatter(x, y, 'filled');
                 obj.MedianColor = args.MedianColor;
                 obj.MedianPlot.MarkerEdgeColor = args.EdgeColor;
@@ -237,7 +237,7 @@ classdef Violin < handle
                 case 'scatter'
                     if ~isempty(data2)
                         jitter = 1*(rand(size(data))); %right
-                        [x,y] = obj.plotOrientation(pos + jitter.*jitterstrength, data);
+                        [x,y] = obj.setAxisOrientation(pos + jitter.*jitterstrength, data);
                         obj.ScatterPlot = ...
                             scatter(x, y, args.MarkerSize, 'filled');
                         % plot the data points within the violin area
@@ -247,11 +247,11 @@ classdef Violin < handle
                             jitterstrength = densityC*widthC;
                         end
                         jitter = -1*rand(size(data2));% left
-                        [x,y] = obj.plotOrientation(pos + jitter.*jitterstrength,data2);
+                        [x,y] = obj.setAxisOrientation(pos + jitter.*jitterstrength,data2);
                         obj.ScatterPlot2 = ...
                             scatter(x, y, args.MarkerSize, 'filled');         
                     else
-                        [x,y] = obj.plotOrientation(pos + jitter.*jitterstrength,data);
+                        [x,y] = obj.setAxisOrientation(pos + jitter.*jitterstrength,data);
                         obj.ScatterPlot = ...
                             scatter(x, y, args.MarkerSize, 'filled');
 
@@ -260,15 +260,16 @@ classdef Violin < handle
                     [counts,edges] = histcounts(data, size(unique(data),1));
                     switch args.HalfViolin
                         case 'right'
-                            [x,y] = obj.plotOrientation([pos-((counts')/max(counts))*max(jitterstrength)*2, pos*ones(size(counts,2),1)]',...
-                                        [edges(1:end-1)+max(diff(edges))/2; edges(1:end-1)+max(diff(edges))/2]);    
-                        case 'left'
-                            [x,y] = obj.plotOrientation([pos*ones(size(counts,2),1), pos+((counts')/max(counts))*max(jitterstrength)*2]', ...
+                            [x,y] = obj.setAxisOrientation([pos-((counts')/max(counts))*max(jitterstrength)*2, pos*ones(size(counts,2),1)]',...
                                         [edges(1:end-1)+max(diff(edges))/2; edges(1:end-1)+max(diff(edges))/2]);
+                            obj.HistogramPlot = plot(x,y,'-','LineWidth',1, 'Color', 'k');
+                        case 'left'
+                            [x,y] = obj.setAxisOrientation([pos*ones(size(counts,2),1), pos+((counts')/max(counts))*max(jitterstrength)*2]', ...
+                                        [edges(1:end-1)+max(diff(edges))/2; edges(1:end-1)+max(diff(edges))/2]);
+                            obj.HistogramPlot = plot(x,y,'-','LineWidth',1, 'Color', 'k');
                         otherwise
                             fprintf([namefun, ' No histogram/bar plot option available for full violins, as it would look overcrowded.\n'])
                     end
-                    obj.HistogramPlot = plot(x,y,'-','LineWidth',1, 'Color', 'k');
                 case 'none'
             end
                 
@@ -277,22 +278,24 @@ classdef Violin < handle
             if isempty(data2) % if no comparison data
                 switch args.HalfViolin
                     case 'right'
-                        [x,y] = obj.plotOrientation([pos+density*width halfViol*pos],...
+                        [x,y] = obj.setAxisOrientation([pos+density*width halfViol*pos],...
                                     [value value(end:-1:1)]);
+                        obj.ViolinPlot = fill(x,y, [1 1 1]);% plot color will be overwritten later
                     case 'left'
-                        [x,y] = obj.plotOrientation([halfViol*pos pos-density(end:-1:1)*width], ...
+                        [x,y] = obj.setAxisOrientation([halfViol*pos pos-density(end:-1:1)*width], ...
                                     [value value(end:-1:1)]);
+                        obj.ViolinPlot = fill(x,y, [1 1 1]);% plot color will be overwritten later
                     case 'full'
-                        [x,y] = obj.plotOrientation([pos+density*width pos-density(end:-1:1)*width],...
+                        [x,y] = obj.setAxisOrientation([pos+density*width pos-density(end:-1:1)*width],...
                                     [value value(end:-1:1)]);
+                        obj.ViolinPlot = fill(x,y, [1 1 1]);% plot color will be overwritten later
                 end
-                obj.ViolinPlot = fill(x,y, [1 1 1]);% plot color will be overwritten later
             else
                 % plot right half of the violin
-                [x,y] = obj.plotOrientation([pos+density*width pos-density(1)*width],[value value(1)]);
+                [x,y] = obj.setAxisOrientation([pos+density*width pos-density(1)*width],[value value(1)]);
                 obj.ViolinPlot = fill(x,y,[1 1 1]);
                 % plot left half of the violin
-                [x,y] = obj.plotOrientation([pos-densityC(end)*widthC pos-densityC(end:-1:1)*widthC],...
+                [x,y] = obj.setAxisOrientation([pos-densityC(end)*widthC pos-densityC(end:-1:1)*widthC],...
                             [valueC(end) valueC(end:-1:1)]);
                 obj.ViolinPlot2 = fill(x,y, [1 1 1]);
             end
@@ -314,10 +317,10 @@ classdef Violin < handle
                             h= [value value(end:-1:1)];
                     end
                     indices = h >= quartiles(1) & h <= quartiles(3);
-                    [x,y] = obj.plotOrientation(w(indices),h(indices));
+                    [x,y] = obj.setAxisOrientation(w(indices),h(indices));
                     obj.ViolinPlotQ = fill(x,y, [1 1 1]); % plot color will be overwritten later
                 case 'boxplot'
-                    [x,y] = obj.plotOrientation(pos+[-1,1,1,-1]*args.BoxWidth,...
+                    [x,y] = obj.setAxisOrientation(pos+[-1,1,1,-1]*args.BoxWidth,...
                                 [quartiles(1) quartiles(1) quartiles(3) quartiles(3)]);
                     obj.BoxPlot = fill(x,y, [1 1 1]); % plot color will be overwritten later
                 case 'none'
@@ -336,13 +339,15 @@ classdef Violin < handle
             end
             switch args.HalfViolin
                 case 'right'
-                    [x,y] = obj.plotOrientation(pos+[0,1].*meanDensityWidth,[meanValue, meanValue]);
+                    [x,y] = obj.setAxisOrientation(pos+[0,1].*meanDensityWidth,[meanValue, meanValue]);
+                    obj.MeanPlot = plot(x,y);
                 case 'left'
-                    [x,y] = obj.plotOrientation(pos+[-1,0].*meanDensityWidth,[meanValue, meanValue]);
+                    [x,y] = obj.setAxisOrientation(pos+[-1,0].*meanDensityWidth,[meanValue, meanValue]);
+                    obj.MeanPlot = plot(x,y);
                 case 'full'
-                    [x,y] = obj.plotOrientation(pos+[-1,1].*meanDensityWidth,[meanValue, meanValue]);
+                    [x,y] = obj.setAxisOrientation(pos+[-1,1].*meanDensityWidth,[meanValue, meanValue]);
+                    obj.MeanPlot = plot(x,y);
             end
-            obj.MeanPlot = plot(x,y);
             obj.MeanPlot.LineWidth = 1;
                 
             %% Plot the median, notch, and whiskers
@@ -352,18 +357,18 @@ classdef Violin < handle
             hiwhisker = quartiles(3) + 1.5*IQR;
             hiwhisker = min(hiwhisker, max(data(data < hiwhisker)));
             if ~isempty(lowhisker) && ~isempty(hiwhisker)
-                [x,y] = obj.plotOrientation([pos pos],[lowhisker hiwhisker]);
+                [x,y] = obj.setAxisOrientation([pos pos],[lowhisker hiwhisker]);
                 obj.WhiskerPlot = plot(x,y);
             end
                 
             % Median
-            [x,y] = obj.plotOrientation(pos, quartiles(2));
+            [x,y] = obj.setAxisOrientation(pos, quartiles(2));
             obj.MedianPlot = scatter(x,y, args.MedianMarkerSize, [1 1 1], 'filled');
                 
             % Notches
-            [x,y] = obj.plotOrientation(pos, quartiles(2)-1.57*IQR/sqrt(length(data)));
+            [x,y] = obj.setAxisOrientation(pos, quartiles(2)-1.57*IQR/sqrt(length(data)));
             obj.NotchPlots = scatter(x,y, [], [1 1 1], 'filled', '^');
-            [x,y] = obj.plotOrientation(pos, quartiles(2)+1.57*IQR/sqrt(length(data)));
+            [x,y] = obj.setAxisOrientation(pos, quartiles(2)+1.57*IQR/sqrt(length(data)));
             obj.NotchPlots(2) = scatter(x,y, [], [1 1 1], 'filled', 'v');
                 
             %% Set graphical preferences
@@ -691,7 +696,7 @@ classdef Violin < handle
             results = p.Results;
         end
 
-        function [x,y] = plotOrientation(obj, x, y)
+        function [x,y] = setAxisOrientation(obj, x, y)
             if strcmp(obj.Orientation,'horizontal')
                 tmp = x;
                 x = y;
