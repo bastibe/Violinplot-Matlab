@@ -71,6 +71,7 @@ function violins = violinplot(data, cats, varargin)
 %                    Defaults to alphabetical ordering
 %     'Orientation'  Orientation of the violin plot. 
 %                    Defaults to 'vertical'.
+%     'Parent'       The parent axis of the violin plot.
 
 % Copyright (c) 2016, Bastian Bechtold
 % This code is released under the terms of the BSD 3-clause license
@@ -141,11 +142,11 @@ if isa(data, 'dataset') || isstruct(data) || istable(data)
         violins(n) = Violin({thisData}, n, varargin{:});
     end
     if strcmp(violins(1).Orientation,'vertical')
-        set(gca, 'XTick', 1:length(catnames), 'XTickLabels', catnames);
+        set(violins(1).Parent, 'XTick', 1:length(catnames), 'XTickLabels', catnames);
     else
-        set(gca, 'YTick', 1:length(catnames), 'YTickLabels', catnames);
+        set(violins(1).Parent, 'YTick', 1:length(catnames), 'YTickLabels', catnames);
     end
-    set(gca,'Box','on');
+    set(violins(1).Parent,'Box','on');
     return
 elseif iscell(data) && length(data(:))==2 % cell input
     if not(size(data{1},2)==size(data{2},2))
@@ -171,11 +172,11 @@ elseif isnumeric(data) % numeric input
             violins(n) = Violin({thisData}, n, varargin{:});
         end
         if strcmp(violins(1).Orientation,'vertical')
-            set(gca, 'XTick', 1:length(catnames), 'XTickLabels', catnames);
+            set(violins(1).Parent, 'XTick', 1:length(catnames), 'XTickLabels', catnames);
         else
-            set(gca, 'YTick', 1:length(catnames), 'YTickLabels', catnames);
+            set(violins(1).Parent, 'YTick', 1:length(catnames), 'YTickLabels', catnames);
         end
-        set(gca,'Box','on');
+        set(violins(1).Parent,'Box','on');
         return
     else
         data = {data};
@@ -186,9 +187,9 @@ end
 if not(hascategories) && isvector(data{1})
     violins = Violin(data, 1, varargin{:});
     if strcmp(violins(1).Orientation,'vertical')
-        set(gca, 'XTick', 1);
+        set(violins(1).Parent, 'XTick', 1);
     else
-        set(gca, 'yTick', 1);
+        set(violins(1).Parent, 'yTick', 1);
     end
 % 2D data with or without categories
 elseif ismatrix(data{1})
@@ -197,19 +198,19 @@ elseif ismatrix(data{1})
         violins(n) = Violin(thisData, n, varargin{:});
     end
     if strcmp(violins(1).Orientation,'vertical')
-        set(gca, 'XTick', 1:size(data{1}, 2));
+        set(violins(1).Parent, 'XTick', 1:size(data{1}, 2));
     else
-        set(gca, 'YTick', 1:size(data{1}, 2));
+        set(violins(1).Parent, 'YTick', 1:size(data{1}, 2));
     end
     if hascategories && length(cats) == size(data{1}, 2)
         if strcmp(violins(1).Orientation,'vertical')
-            set(gca, 'XTickLabels', cats);
+            set(violins(1).Parent, 'XTickLabels', cats);
         else
-            set(gca, 'YTickLabels', cats);
+            set(violins(1).Parent, 'YTickLabels', cats);
         end
     end
 end
 
-set(gca,'Box','on');
+set(violins(1).Parent,'Box','on');
 
 end
