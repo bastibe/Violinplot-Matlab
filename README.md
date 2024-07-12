@@ -38,15 +38,21 @@ You can also play around with the different options, and tune your violin plots 
 
 ```matlab
 grouporder={'England','Sweden','Japan','Italy','Germany','France','USA'};
+color = jet(length(grouporder));
+pos = 3;
 vs = Violin({MPG(strcmp(Origin, grouporder{pos}))},...
-    position,...
+    pos,...
     'HalfViolin','right',...% left, full
     'QuartileStyle','shadow',... % boxplot, none
     'DataStyle', 'histogram',... % scatter, none
     'ShowNotches', false,...
     'ShowMean', false,...
     'ShowMedian', true,...
-    'ViolinColor', color);
+    'ViolinColor', {color(pos,:)},...
+    'Orientation', 'horizontal');
+ylim(pos + [-.5, 0.5])
+yticks(pos)
+yticklabels(grouporder{pos})
 ```
 ![example image2](example2.png)
 
