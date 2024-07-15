@@ -50,14 +50,14 @@ plotdetails(5);
 % TEST CASE 6
 disp('Test 6: Test plotting only right side & histogram plot, with quartiles as boxplot.');
 subplot(2,4,6); 
-vs5 = violinplot(MPG, Origin, 'QuartileStyle','boxplot', 'HalfViolin','right',...
+vs6 = violinplot(MPG, Origin, 'QuartileStyle','boxplot', 'HalfViolin','right',...
     'DataStyle', 'histogram');
 plotdetails(6);
 
 % TEST CASE 7
 disp('Test 7: Test plotting only left side & histogram plot, and quartiles as shadow.');
 subplot(2,4,7); 
-vs5 = violinplot(MPG, Origin, 'QuartileStyle','shadow', 'HalfViolin','left',...
+vs7 = violinplot(MPG, Origin, 'QuartileStyle','shadow', 'HalfViolin','left',...
      'DataStyle', 'histogram', 'ShowMean', true);
 plotdetails(7);
 
@@ -65,15 +65,41 @@ plotdetails(7);
 % TEST CASE 8
 disp('Test 8: Same as previous one, just removing the data of half of the violins afterwards.');
 subplot(2,4,8); 
-vs5 = violinplot([MPG; 5;5;5;5;5], [Origin; 'test';'test';'test';'test';'test'], 'QuartileStyle','shadow', 'HalfViolin','full',...
+vs8 = violinplot([MPG; 5;5;5;5;5], [Origin; 'test';'test';'test';'test';'test'], 'QuartileStyle','shadow', 'HalfViolin','full',...
      'DataStyle', 'scatter', 'ShowMean', false);
 plotdetails(8);
-for n= 1:round(length(vs5)/2)
-    vs5(1,n).ShowData = 0;
+for n= 1:round(length(vs8)/2)
+    vs8(1,n).ShowData = 0;
 end
 xlim([0, 9]);
-%other test cases could be added here
 
+% TEST CASE 9
+disp('Test 9: Test parent property.');
+figure
+for i = 1:4
+    ax(i) = subplot(2,2,i);
+end
+vs9 = violinplot(MPG, Origin,'parent',ax(3));
+title(ax(3),sprintf('Test %02.0f \n',9));
+ylabel(ax(3),'Fuel Economy in MPG ');
+xlim(ax(3),[0, 8]);
+grid(ax(3),'minor');
+set(ax(3), 'color', 'none');
+xtickangle(ax(3),-30);
+fprintf('Test %02.0f passed ok! \n ',9);
+
+% TEST CASE 10
+disp('Test 10: Test of axis orientation.');
+vs10 = violinplot(MPG, Origin,'parent',ax(2),'Orientation','horizontal');
+title(ax(2),sprintf('Test %02.0f \n',10));
+xlabel(ax(2),'Fuel Economy in MPG ');
+ylim(ax(2),[0, 8]);
+grid(ax(2),'minor');
+set(ax(2), 'color', 'none');
+ytickangle(ax(2),0);
+fprintf('Test %02.0f passed ok! \n ',10);
+
+%other test cases could be added here
 end 
 
 function plotdetails(n)
